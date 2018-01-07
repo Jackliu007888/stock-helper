@@ -1,0 +1,28 @@
+{
+  "name": "__MSG_appName__",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "__MSG_appDescription__",
+  "icons": {
+    "16": "images/Stock.png",
+    "128": "images/Stock.png"
+  },
+  "default_locale": "en",
+  "background": {
+    "scripts": [
+      "scripts/chromereload.js",
+      "scripts/background.js"
+    ]
+  },
+  "permissions": [
+    "http://hq.sinajs.cn/list=*"
+  ],
+  "browser_action": {
+    "default_icon": {
+      "19": "images/Stock.png",
+      "38": "images/Stock.png"
+    },
+    "default_title": "__MSG_appName__",
+    "default_popup": "popup.html"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "stock-helper",
+    "description": "The name of the application"
+  },
+  "appDescription": {
+    "message": "a Chrome Extension for stock",
+    "description": "The description of the application"
+  }
+}
