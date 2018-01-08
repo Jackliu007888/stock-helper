@@ -1,7 +1,8 @@
 // 'use strict';
 import Vue from 'vue';
 import ElementUI from 'element-ui';
-// import '../../element-ui/lib/theme-chalk'
+// import '../../node_modules/element-ui/lib/theme-chalk/inedx.css'
+import 'element-ui/lib/theme-chalk/index.css'
 import Popup from './popup/Popup.vue';
 
 Array.prototype.indexOf = function(val) {

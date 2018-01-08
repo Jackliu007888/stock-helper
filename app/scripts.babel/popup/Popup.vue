@@ -6,7 +6,7 @@
         size="mini"
         :data="stocks"
         style="width: 100%"
-        :default-sort = "{prop: 'date', order: 'descending'}"
+        :default-sort = "{prop: 'range', order: 'descending'}"
         >
         <el-table-column
           prop="name"
@@ -28,7 +28,8 @@
         <el-table-column
           prop="range"
           label="涨跌幅"
-          width="90"      
+          width="90"
+          :formatter="formatter"      
           sortable>
         </el-table-column>        
         
@@ -65,71 +66,81 @@
   </div>    
 </template>
 <script>
-import {getStockByCode} from './api/api'
+import { getStockByCode } from './api/api';
 export default {
-  data () {
+  data() {
     return {
       lodingMsg: 'loading...',
       stocks: [],
       stockCodeList: [],
-      input: '',
-    }
+      input: ''
+    };
   },
-  created(){
-    const conShock = 'sz002183'
-    this.stockCodeList = (localStorage.stocks && localStorage.stocks.split(',')) || [conShock]
-    setTimeout( ()=> {
-      this._getALLStock(this.stockCodeList)
-    }, 20*3)
+  created() {
+    const conShock = 'sz002183';
+    this.stockCodeList = (localStorage.stocks &&
+      localStorage.stocks.split(',')) || [conShock];
+    console.log(this.stockCodeList,'1')
+    this._getALLStock(this.stockCodeList);
 
-    setInterval( () => {
-      this._getALLStock(this.stockCodeList)
-    }, 10000)
+    setInterval(() => {
+      this._getALLStock(this.stockCodeList);
+    }, 10000);
   },
   watch: {
     stockCodeList: function() {
-      localStorage.stocks = this.stockCodeList
-      console.log('refresh stockCodeList', this.stocks)
+      localStorage.stocks = this.stockCodeList;
+      console.log('refresh stockCodeList', this.stocks);
     },
     stocks: function() {
-      console.log('refresh stocks', this.stocks)
+      console.log('refresh stocks', this.stocks);
     }
   },
   methods: {
+    sortMethod() {},
+    formatter(row, column) {
+      return row.range + '%';
+    },
     deleteRow(index, rows) {
-      var that = rows
+      var that = rows;
       this.stockCodeList.remove(that[index].code);
       rows.splice(index, 1);
     },
     addStock() {
-      console.log(this.input)
-      this._getStockByCode(this.input)
+      console.log(this.input);
+      this._getStockByCode(this.input);
     },
     _getALLStock(allStock) {
-      for (let i =0; i < allStock.length; i++) {
-        this._getStockByCode(allStock[i])
+      for (let i = 0; i < allStock.length; i++) {
+        setTimeout(() => {
+          this._getStockByCode(allStock[i]);
+        }, 30);
       }
     },
-    _getStockByCode(code){
+    _getFixedNum(num, digit) {
+      digit = digit ? digit : 2;
+      return Number(Number(num).toFixed(digit));
+    },
+    _getStockByCode(code) {
       getStockByCode(code).then(res => {
-        var result = res.split('=')[1]
+        var result = res.split('=')[1];
         if (!result) {
-          console.log('no result')
-          return
+          console.log('no result');
+          return;
         }
-        var itemArr = result.split('"')[1].split(',')
+        var itemArr = result.split('"')[1].split(',');
         var name = itemArr[0],
-            toPrice = Number(itemArr[1]).toFixed(2), // 今开
-            yesPrice = Number(itemArr[2]).toFixed(2), // 昨收
-            curPrice = Number(itemArr[3]).toFixed(2), // 当前价
-            highPrice = Number(itemArr[4]).toFixed(2), // 最高
-            // lowPrice = Number(itemArr[5]).toFixed(2), // 未知
-            // lowPrice = Number(itemArr[6]).toFixed(2), // 未知
-            lowPrice = Number(itemArr[7]).toFixed(2), // 最低
-            date = Number(itemArr[8]).toFixed(2), // 日期
-            time = Number(itemArr[9]).toFixed(2) // 时间
-        var rangePrice = (curPrice - yesPrice).toFixed(2)
-        var range = ((curPrice - yesPrice)/yesPrice * 100 ).toFixed(2) + '%'
+          toPrice = this._getFixedNum(itemArr[1]), // 今开
+          yesPrice = this._getFixedNum(itemArr[2]), // 昨收
+          curPrice = this._getFixedNum(itemArr[3]), // 当前价
+          highPrice = this._getFixedNum(itemArr[4]), // 最高
+          // lowPrice = this._getFixedNum(itemArr[5]), // 未知
+          // lowPrice = this._getFixedNum(itemArr[6]), // 未知
+          lowPrice = this._getFixedNum(itemArr[7]), // 最低
+          date = Number(itemArr[8]), // 日期
+          time = Number(itemArr[9]); // 时间
+        var rangePrice = this._getFixedNum(curPrice - yesPrice);
+        var range = this._getFixedNum((curPrice - yesPrice) / yesPrice * 100);
         var stockObj = {
           code,
           name,
@@ -142,41 +153,44 @@ export default {
           range,
           date,
           time
-        }
-        
-        var indexCode  = this.stockCodeList.indexOf(code) 
+        };
+
+        var indexCode = this.stockCodeList.indexOf(code);
         if (indexCode == -1) {
-          this.input = ''
-          this.stocks.push(stockObj)
-          this.stockCodeList.push(code)
+          this.input = '';
+          this.stocks.push(stockObj);
+          this.stockCodeList.push(code);
         } else {
-          this.stocks.splice(indexCode, 1, stockObj)
-          this.stockCodeList.splice(indexCode, 1, code)
+          this.stocks.splice(indexCode, 1, stockObj);
+          this.stockCodeList.splice(indexCode, 1, code);
         }
-        console.log('1',this.stocks)
-        console.log('2',this.stockCodeList)
-      })
+        console.log('1', this.stocks);
+        console.log('2', this.stockCodeList);
+      });
     }
   }
-}
+};
 </script>
 
 <style lang="stylus">
 * {
-  margin 0
-  padding 0
-  text-align center   
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
+
 html {
-  font-size 20px
+  font-size: 20px;
 }
 
-.stock
-  width 22rem
-  height 100%
-  position relative
+.stock {
+  width: 22rem;
+  height: 100%;
+  position: relative;
   // background-color #eee
+}
 
-.input
-  padding 1.5rem 0 0
+.input {
+  padding: 1.5rem 0 0;
+}
 </style>

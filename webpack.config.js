@@ -10,18 +10,19 @@ module.exports = {
   module: {
       rules: [{
           test: /\.js$/,
+          exclude: /node_modules/,
           loader: 'babel-loader'
       }, {
           test: /\.vue$/,
           loader: 'vue-loader'
       },
       {
-        test: /\\.css$/,
-        loader: 'style!css'
+        test: /\.css$/,
+        loader: 'style-loader!css-loader'
     },
     {
-        test: /\\.(eot|woff|woff2|ttf)([\\?]?.*)$/,
-        loader: 'file'
+        test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
+        loader: 'url-loader'
     }]
   }
 }

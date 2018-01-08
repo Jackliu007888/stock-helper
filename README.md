@@ -1,6 +1,7 @@
 ## a chrome extension for Chinese stocks
 
-vue.js
+vue.js@2.x
+element-ui@2.x
 webpack
 babel
 gulp
