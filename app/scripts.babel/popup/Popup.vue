@@ -44,7 +44,7 @@
           label="操作">
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="deleteRow(scope.$index, stocks)"
+              @click.native.prevent="deleteRow(scope.$index,  scope.row)"
               type="text"
               width="45"
               size="mini">
@@ -57,8 +57,8 @@
     <div class="input">
       <el-row :gutter="20">
         <el-col :span="16" :offset="6">
-          <el-input size="medium" v-model="input" placeholder="请输入股票代码">
-            <el-button @click.native.prevent="addStock" type="number" slot="append" icon="el-icon-circle-plus" clearable >添加</el-button>
+          <el-input class="add-stock" size="medium" clearable v-model="input" placeholder="请输入6位股票代码">
+            <el-button @click.native.prevent="addStock" type="number" slot="append" icon="el-icon-circle-plus">添加</el-button>
           </el-input>
         </el-col>
       </el-row>
@@ -67,6 +67,7 @@
 </template>
 <script>
 import { getStockByCode } from './api/api';
+import { check, getRightShock} from './api/base'
 export default {
   data() {
     return {
@@ -97,18 +98,25 @@ export default {
     }
   },
   methods: {
-    sortMethod() {},
     formatter(row, column) {
       return row.range + '%';
     },
     deleteRow(index, rows) {
       var that = rows;
-      this.stockCodeList.remove(that[index].code);
-      rows.splice(index, 1);
+      // console.log(that[index].code)
+      console.log(index)
+      console.log('row', rows)
+      this.stockCodeList.remove(that.code);
+      this.stocks.remove(that);
     },
     addStock() {
       console.log(this.input);
-      this._getStockByCode(this.input);
+      if(check(this.input)) {
+        let rightStock = getRightShock(this.input)
+        this._getStockByCode(rightStock);
+      }else {
+        return
+      }
     },
     _getALLStock(allStock) {
       for (let i = 0; i < allStock.length; i++) {
@@ -164,8 +172,6 @@ export default {
           this.stocks.splice(indexCode, 1, stockObj);
           this.stockCodeList.splice(indexCode, 1, code);
         }
-        console.log('1', this.stocks);
-        console.log('2', this.stockCodeList);
       });
     }
   }
@@ -192,5 +198,8 @@ html {
 
 .input {
   padding: 1.5rem 0 0;
+}
+.add-stock input{
+  text-align left
 }
 </style>

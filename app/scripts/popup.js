@@ -12648,6 +12648,76 @@ Object.defineProperty(exports, "__esModule", {
 
 var _api = __webpack_require__(168);
 
+var _base = __webpack_require__(188);
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 exports.default = {
   data: function data() {
     return {
@@ -12680,18 +12750,25 @@ exports.default = {
     }
   },
   methods: {
-    sortMethod: function sortMethod() {},
     formatter: function formatter(row, column) {
       return row.range + '%';
     },
     deleteRow: function deleteRow(index, rows) {
       var that = rows;
-      this.stockCodeList.remove(that[index].code);
-      rows.splice(index, 1);
+      // console.log(that[index].code)
+      console.log(index);
+      console.log('row', rows);
+      this.stockCodeList.remove(that.code);
+      this.stocks.remove(that);
     },
     addStock: function addStock() {
       console.log(this.input);
-      this._getStockByCode(this.input);
+      if ((0, _base.check)(this.input)) {
+        var rightStock = (0, _base.getRightShock)(this.input);
+        this._getStockByCode(rightStock);
+      } else {
+        return;
+      }
     },
     _getALLStock: function _getALLStock(allStock) {
       var _this2 = this;
@@ -12761,78 +12838,10 @@ exports.default = {
           _this3.stocks.splice(indexCode, 1, stockObj);
           _this3.stockCodeList.splice(indexCode, 1, code);
         }
-        console.log('1', _this3.stocks);
-        console.log('2', _this3.stockCodeList);
       });
     }
   }
-}; //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+};
 
 /***/ }),
 /* 70 */
@@ -53695,7 +53704,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_script_index_0_Popup_vue__ = __webpack_require__(69);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_script_index_0_Popup_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_script_index_0_Popup_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_script_index_0_Popup_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_script_index_0_Popup_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_13_6_2_vue_loader_lib_template_compiler_index_id_data_v_1703873e_hasScoped_false_buble_transforms_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_template_index_0_Popup_vue__ = __webpack_require__(188);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_13_6_2_vue_loader_lib_template_compiler_index_id_data_v_1703873e_hasScoped_false_buble_transforms_node_modules_vue_loader_13_6_2_vue_loader_lib_selector_type_template_index_0_Popup_vue__ = __webpack_require__(189);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -53779,7 +53788,7 @@ exports = module.exports = __webpack_require__(68)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  width: 22rem;\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  width: 22rem;\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n", ""]);
 
 // exports
 
@@ -55066,6 +55075,66 @@ module.exports = function spread(callback) {
 
 /***/ }),
 /* 188 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.check = check;
+exports.getRightShock = getRightShock;
+var normalStock = {
+  sh: ['600', '601'],
+  sz: ['000'],
+  ms: ['002'],
+  cy: ['300'],
+  shB: ['900'],
+  szB: ['200'],
+  shN: ['730'],
+  szN: ['000'],
+  shP: ['700'],
+  szP: ['080']
+};
+var normalStockArr = function () {
+  var tempArr = [];
+  for (var key in normalStock) {
+    tempArr = tempArr.concat(normalStock[key]);
+  }
+  return tempArr;
+}();
+
+function check(shock) {
+  var firstStock = shock.slice(0, 3);
+  var isNormal = false;
+  for (var i = 0; i < normalStockArr.length; i++) {
+    if (firstStock == normalStockArr[i]) {
+      isNormal = true;
+    }
+  }
+  return isNormal;
+}
+
+function getRightShock(shock) {
+  console.log(shock);
+
+  var firstStock = shock.slice(0, 3);
+  var shArr = normalStock['sh'].concat(normalStock['shB'], normalStock['shN'], normalStock['shP']);
+  console.log(shArr);
+
+  for (var i = 0; i < shArr.length; i++) {
+    var element = shArr[i];
+    if (element == firstStock) {
+      return 'sh' + shock;
+    }
+  }
+
+  return 'sz' + shock;
+}
+
+/***/ }),
+/* 189 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -55133,7 +55202,7 @@ var render = function() {
                           nativeOn: {
                             click: function($event) {
                               $event.preventDefault()
-                              _vm.deleteRow(scope.$index, _vm.stocks)
+                              _vm.deleteRow(scope.$index, scope.row)
                             }
                           }
                         },
@@ -55166,7 +55235,12 @@ var render = function() {
                 _c(
                   "el-input",
                   {
-                    attrs: { size: "medium", placeholder: "请输入股票代码" },
+                    staticClass: "add-stock",
+                    attrs: {
+                      size: "medium",
+                      clearable: "",
+                      placeholder: "请输入6位股票代码"
+                    },
                     model: {
                       value: _vm.input,
                       callback: function($$v) {
@@ -55182,8 +55256,7 @@ var render = function() {
                         attrs: {
                           slot: "append",
                           type: "number",
-                          icon: "el-icon-circle-plus",
-                          clearable: ""
+                          icon: "el-icon-circle-plus"
                         },
                         nativeOn: {
                           click: function($event) {
