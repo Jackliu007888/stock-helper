@@ -30,7 +30,7 @@ export function check(shock) {
 }
 
 export function getRightShock(shock) {
-  console.log(shock);
+  // console.log(shock);
 
   var firstStock = shock.slice(0, 3);
   var shArr = normalStock['sh'].concat(
@@ -38,7 +38,7 @@ export function getRightShock(shock) {
     normalStock['shN'],
     normalStock['shP']
 	);
-  console.log(shArr);
+  // console.log(shArr);
 	
   for (let i = 0; i < shArr.length; i++) {
     const element = shArr[i];

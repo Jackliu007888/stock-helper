@@ -12717,69 +12717,121 @@ var _base = __webpack_require__(188);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 exports.default = {
   data: function data() {
+    var _this = this;
+
+    var checkStock = function checkStock(rule, value, callback) {
+      if (!(0, _base.check)(value)) {
+        callback(new Error('请输入正确的股票代码'));
+      } else {
+        callback();
+      }
+    };
+    var checkRepeat = function checkRepeat(rule, value, callback) {
+      if (_this.stockCodeList.indexOf((0, _base.getRightShock)(value)) > -1) {
+        callback(new Error('股票已存在，请勿重复添加！'));
+      } else {
+        callback();
+      }
+    };
     return {
       lodingMsg: 'loading...',
       stocks: [],
+      costList: [],
       stockCodeList: [],
-      input: ''
+      formInline: {
+        code: '',
+        cost: ''
+      },
+      rules: {
+        code: [{ required: true, message: '请输入6位股票代码', trigger: 'blur' }, { min: 6, max: 6, message: '长度为6位数字', trigger: 'blur' }, { validator: checkStock, trigger: 'blur' }, { validator: checkRepeat, trigger: 'blur' }]
+      }
     };
   },
   created: function created() {
-    var _this = this;
-
-    var conShock = 'sz002183';
-    this.stockCodeList = localStorage.stocks && localStorage.stocks.split(',') || [conShock];
-    console.log(this.stockCodeList, '1');
-    this._getALLStock(this.stockCodeList);
+    this._initGetStock();
+  },
+  mounted: function mounted() {
+    var _this2 = this;
 
     setInterval(function () {
-      _this._getALLStock(_this.stockCodeList);
+      _this2._getALLStock(_this2.stockCodeList, _this2.costList);
     }, 10000);
   },
 
   watch: {
     stockCodeList: function stockCodeList() {
-      localStorage.stocks = this.stockCodeList;
-      console.log('refresh stockCodeList', this.stocks);
+      localStorage.stockCodeList = this.stockCodeList;
+      console.log('refresh stockCodeList', this.stockCodeList);
     },
     stocks: function stocks() {
       console.log('refresh stocks', this.stocks);
+    },
+    costList: function costList() {
+      localStorage.costList = this.costList;
     }
   },
   methods: {
+    checkStock: function checkStock() {},
     formatter: function formatter(row, column) {
       return row.range + '%';
     },
     deleteRow: function deleteRow(index, rows) {
       var that = rows;
-      // console.log(that[index].code)
-      console.log(index);
-      console.log('row', rows);
+      // console.log(index)
+      // console.log('row', rows)
       this.stockCodeList.remove(that.code);
+      this.costList.remove(that.cost);
       this.stocks.remove(that);
     },
-    addStock: function addStock() {
-      console.log(this.input);
-      if ((0, _base.check)(this.input)) {
-        var rightStock = (0, _base.getRightShock)(this.input);
-        this._getStockByCode(rightStock);
-      } else {
-        return;
-      }
+    addStock: function addStock(formName) {
+      var _this3 = this;
+
+      var code = this.formInline.code;
+      var cost = this.formInline.cost || 0;
+      this.$refs[formName].validate(function (valid) {
+        if (valid && (0, _base.check)(code)) {
+          var rightStock = (0, _base.getRightShock)(code);
+          _this3._getStockByCode(rightStock, cost);
+        } else {
+          return;
+        }
+      });
     },
-    _getALLStock: function _getALLStock(allStock) {
-      var _this2 = this;
+    _initGetStock: function _initGetStock() {
+      var conShock = 'sz002183';
+      this.stockCodeList = localStorage.stockCodeList && localStorage.stockCodeList.split(',') || [conShock];
+      this.costList = localStorage.costList && localStorage.costList.split(',') || [0];
+
+      this._getALLStock(this.stockCodeList, this.costList);
+    },
+    _getALLStock: function _getALLStock(allStock, allCost) {
+      var _this4 = this;
 
       var _loop = function _loop(i) {
+        that = _this4;
+
         setTimeout(function () {
-          _this2._getStockByCode(allStock[i]);
+          _this4._getStockByCode(allStock[i], allCost[i]);
         }, 30);
       };
 
       for (var i = 0; i < allStock.length; i++) {
+        var that;
+
         _loop(i);
       }
     },
@@ -12787,8 +12839,10 @@ exports.default = {
       digit = digit ? digit : 2;
       return Number(Number(num).toFixed(digit));
     },
-    _getStockByCode: function _getStockByCode(code) {
-      var _this3 = this;
+    _getStockByCode: function _getStockByCode(code, cost) {
+      var _this5 = this;
+
+      var thatCost = cost;
 
       (0, _api.getStockByCode)(code).then(function (res) {
         var result = res.split('=')[1];
@@ -12798,23 +12852,27 @@ exports.default = {
         }
         var itemArr = result.split('"')[1].split(',');
         var name = itemArr[0],
-            toPrice = _this3._getFixedNum(itemArr[1]),
+            cost = thatCost ? Number(thatCost) : 0,
+            toPrice = _this5._getFixedNum(itemArr[1]),
             // 今开
-        yesPrice = _this3._getFixedNum(itemArr[2]),
+        yesPrice = _this5._getFixedNum(itemArr[2]),
             // 昨收
-        curPrice = _this3._getFixedNum(itemArr[3]),
+        curPrice = _this5._getFixedNum(itemArr[3]),
             // 当前价
-        highPrice = _this3._getFixedNum(itemArr[4]),
+        highPrice = _this5._getFixedNum(itemArr[4]),
             // 最高
         // lowPrice = this._getFixedNum(itemArr[5]), // 未知
         // lowPrice = this._getFixedNum(itemArr[6]), // 未知
-        lowPrice = _this3._getFixedNum(itemArr[7]),
+        lowPrice = _this5._getFixedNum(itemArr[7]),
             // 最低
         date = Number(itemArr[8]),
             // 日期
         time = Number(itemArr[9]); // 时间
-        var rangePrice = _this3._getFixedNum(curPrice - yesPrice);
-        var range = _this3._getFixedNum((curPrice - yesPrice) / yesPrice * 100);
+        var rangePrice = _this5._getFixedNum(curPrice - yesPrice);
+        var range = _this5._getFixedNum((curPrice - yesPrice) / yesPrice * 100);
+        var profit = cost == 0 ? 0 : _this5._getFixedNum(curPrice - cost);
+        // console.log(cost)
+        // console.log(profit)
         var stockObj = {
           code: code,
           name: name,
@@ -12826,17 +12884,22 @@ exports.default = {
           rangePrice: rangePrice,
           range: range,
           date: date,
-          time: time
+          time: time,
+          cost: cost,
+          profit: profit
         };
 
-        var indexCode = _this3.stockCodeList.indexOf(code);
+        var indexCode = _this5.stockCodeList.indexOf(code);
         if (indexCode == -1) {
-          _this3.input = '';
-          _this3.stocks.push(stockObj);
-          _this3.stockCodeList.push(code);
+          _this5.formInline.code = '';
+          _this5.formInline.cost = '';
+          _this5.stocks.push(stockObj);
+          _this5.stockCodeList.push(code);
+          _this5.costList.push(cost);
         } else {
-          _this3.stocks.splice(indexCode, 1, stockObj);
-          _this3.stockCodeList.splice(indexCode, 1, code);
+          _this5.stocks.splice(indexCode, 1, stockObj);
+          _this5.stockCodeList.splice(indexCode, 1, code);
+          _this5.costList.splice(indexCode, 1, cost);
         }
       });
     }
@@ -53788,7 +53851,7 @@ exports = module.exports = __webpack_require__(68)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  width: 22rem;\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  width: 30rem;\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n", ""]);
 
 // exports
 
@@ -55117,11 +55180,11 @@ function check(shock) {
 }
 
 function getRightShock(shock) {
-  console.log(shock);
+  // console.log(shock);
 
   var firstStock = shock.slice(0, 3);
   var shArr = normalStock['sh'].concat(normalStock['shB'], normalStock['shN'], normalStock['shP']);
-  console.log(shArr);
+  // console.log(shArr);
 
   for (var i = 0; i < shArr.length; i++) {
     var element = shArr[i];
@@ -55189,6 +55252,15 @@ var render = function() {
             }),
             _vm._v(" "),
             _c("el-table-column", {
+              attrs: {
+                prop: "profit",
+                label: "盈亏",
+                width: "90",
+                sortable: ""
+              }
+            }),
+            _vm._v(" "),
+            _c("el-table-column", {
               attrs: { label: "操作" },
               scopedSlots: _vm._u([
                 {
@@ -55225,51 +55297,68 @@ var render = function() {
       { staticClass: "input" },
       [
         _c(
-          "el-row",
-          { attrs: { gutter: 20 } },
+          "el-form",
+          {
+            ref: "formInline",
+            staticClass: "demo-form-inline",
+            attrs: {
+              inline: true,
+              model: _vm.formInline,
+              size: "mini",
+              rules: _vm.rules
+            }
+          },
           [
             _c(
-              "el-col",
-              { attrs: { span: 16, offset: 6 } },
+              "el-form-item",
+              { attrs: { label: "股票代码", prop: "code" } },
+              [
+                _c("el-input", {
+                  attrs: { placeholder: "请输入6位股票代码" },
+                  model: {
+                    value: _vm.formInline.code,
+                    callback: function($$v) {
+                      _vm.$set(_vm.formInline, "code", $$v)
+                    },
+                    expression: "formInline.code"
+                  }
+                })
+              ],
+              1
+            ),
+            _vm._v(" "),
+            _c(
+              "el-form-item",
+              { attrs: { label: "持仓成本" } },
+              [
+                _c("el-input", {
+                  attrs: { placeholder: "请输入持仓成本" },
+                  model: {
+                    value: _vm.formInline.cost,
+                    callback: function($$v) {
+                      _vm.$set(_vm.formInline, "cost", $$v)
+                    },
+                    expression: "formInline.cost"
+                  }
+                })
+              ],
+              1
+            ),
+            _vm._v(" "),
+            _c(
+              "el-form-item",
               [
                 _c(
-                  "el-input",
+                  "el-button",
                   {
-                    staticClass: "add-stock",
-                    attrs: {
-                      size: "medium",
-                      clearable: "",
-                      placeholder: "请输入6位股票代码"
-                    },
-                    model: {
-                      value: _vm.input,
-                      callback: function($$v) {
-                        _vm.input = $$v
-                      },
-                      expression: "input"
+                    attrs: { type: "primary" },
+                    on: {
+                      click: function($event) {
+                        _vm.addStock("formInline")
+                      }
                     }
                   },
-                  [
-                    _c(
-                      "el-button",
-                      {
-                        attrs: {
-                          slot: "append",
-                          type: "number",
-                          icon: "el-icon-circle-plus"
-                        },
-                        nativeOn: {
-                          click: function($event) {
-                            $event.preventDefault()
-                            _vm.addStock($event)
-                          }
-                        },
-                        slot: "append"
-                      },
-                      [_vm._v("添加")]
-                    )
-                  ],
-                  1
+                  [_vm._v("添加")]
                 )
               ],
               1
