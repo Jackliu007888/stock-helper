@@ -7,10 +7,13 @@
         :data="stocks"
         style="width: 100%"
         :default-sort = "{prop: 'range', order: 'descending'}"
+        :cell-class-name = 'cellClassName'
         >
         <el-table-column
-          prop="name"
           label="股票">
+          <template slot-scope="scope">
+            <a class="stock-link" :href="`http://stockpage.10jqka.com.cn/${scope.row.code.slice(2)}/`" target="_blank">{{scope.row.name}}<span class='stock-code'>{{scope.row.code}}</span></a>
+          </template>
         </el-table-column>
 
         <!-- <el-table-column
@@ -26,8 +29,8 @@
         </el-table-column>
           
         <el-table-column
-          prop="range"
           label="涨跌幅"
+          prop="range"
           width="90"
           :formatter="formatter"      
           sortable>
@@ -36,6 +39,7 @@
         <el-table-column
           prop="rangePrice"
           label="涨跌额"
+          :class-name="stocks.rangePrice > 0 ? 'a' : 'b'"
           width="90"      
           sortable>
         </el-table-column>
@@ -45,6 +49,11 @@
           label="盈亏"
           width="90"      
           sortable>
+        </el-table-column>
+
+        <el-table-column
+          prop="cost"
+          label="成本">
         </el-table-column>
           
         <el-table-column
@@ -135,7 +144,13 @@ export default {
     }
   },
   methods: {
-    checkStock() {},
+    cellClassName(rows, columns, rowIndex, columnIndex) {
+      if (rows.columnIndex != '2' && rows.columnIndex != '3' ) {
+        return ''
+      } else {
+        return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down'
+      }
+    },
     formatter(row, column) {
       return row.range + '%';
     },
@@ -265,4 +280,35 @@ html {
 .add-stock input {
   text-align: left;
 }
+
+.stock-up .cell, .stock-down .cell {
+    color: #fff;
+    font-weight: 700;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    width: 80%;
+    border-radius: 0.25rem;
+}
+
+.stock-up .cell {
+    background-color: rgba(255, 75, 75, 1);
+}
+
+.stock-down .cell{
+    background-color: rgba(15, 175, 75, 1);
+}
+
+.el-table tbody .el-table_1_column_1 .cell
+  line-height 0.8rem
+
+
+a.stock-link 
+  font-size: 0.8rem;
+  color: black;
+  font-weight: 500;
+  text-decoration: none;
+  .stock-code
+    display block
+    font-size .5rem
+    font-weight 300
 </style>

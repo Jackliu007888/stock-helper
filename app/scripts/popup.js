@@ -12728,6 +12728,15 @@ var _base = __webpack_require__(188);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 exports.default = {
   data: function data() {
@@ -12785,7 +12794,13 @@ exports.default = {
     }
   },
   methods: {
-    checkStock: function checkStock() {},
+    cellClassName: function cellClassName(rows, columns, rowIndex, columnIndex) {
+      if (rows.columnIndex != '2' && rows.columnIndex != '3') {
+        return '';
+      } else {
+        return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down';
+      }
+    },
     formatter: function formatter(row, column) {
       return row.range + '%';
     },
@@ -13217,14 +13232,12 @@ Array.prototype.remove = function (val) {
 };
 
 _vue2.default.use(_elementUi2.default);
-setTimeout(function () {
-  new _vue2.default({
-    el: '#app',
-    render: function render(c) {
-      return c(_Popup2.default);
-    }
-  });
-}, 20);
+new _vue2.default({
+  el: '#app',
+  render: function render(c) {
+    return c(_Popup2.default);
+  }
+});
 
 /***/ }),
 /* 78 */
@@ -53851,7 +53864,7 @@ exports = module.exports = __webpack_require__(68)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  width: 30rem;\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  width: 30rem;\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n", ""]);
 
 // exports
 
@@ -55217,11 +55230,42 @@ var render = function() {
             attrs: {
               size: "mini",
               data: _vm.stocks,
-              "default-sort": { prop: "range", order: "descending" }
+              "default-sort": { prop: "range", order: "descending" },
+              "cell-class-name": _vm.cellClassName
             }
           },
           [
-            _c("el-table-column", { attrs: { prop: "name", label: "股票" } }),
+            _c("el-table-column", {
+              attrs: { label: "股票" },
+              scopedSlots: _vm._u([
+                {
+                  key: "default",
+                  fn: function(scope) {
+                    return [
+                      _c(
+                        "a",
+                        {
+                          staticClass: "stock-link",
+                          attrs: {
+                            href:
+                              "http://stockpage.10jqka.com.cn/" +
+                              scope.row.code.slice(2) +
+                              "/",
+                            target: "_blank"
+                          }
+                        },
+                        [
+                          _vm._v(_vm._s(scope.row.name)),
+                          _c("span", { staticClass: "stock-code" }, [
+                            _vm._v(_vm._s(scope.row.code))
+                          ])
+                        ]
+                      )
+                    ]
+                  }
+                }
+              ])
+            }),
             _vm._v(" "),
             _c("el-table-column", {
               attrs: {
@@ -55234,8 +55278,8 @@ var render = function() {
             _vm._v(" "),
             _c("el-table-column", {
               attrs: {
-                prop: "range",
                 label: "涨跌幅",
+                prop: "range",
                 width: "90",
                 formatter: _vm.formatter,
                 sortable: ""
@@ -55246,6 +55290,7 @@ var render = function() {
               attrs: {
                 prop: "rangePrice",
                 label: "涨跌额",
+                "class-name": _vm.stocks.rangePrice > 0 ? "a" : "b",
                 width: "90",
                 sortable: ""
               }
@@ -55259,6 +55304,8 @@ var render = function() {
                 sortable: ""
               }
             }),
+            _vm._v(" "),
+            _c("el-table-column", { attrs: { prop: "cost", label: "成本" } }),
             _vm._v(" "),
             _c("el-table-column", {
               attrs: { label: "操作" },
