@@ -300,6 +300,7 @@ html {
 
 .el-table tbody .el-table_1_column_1 .cell
   line-height 0.8rem
+  width 5rem 
 
 
 a.stock-link 
