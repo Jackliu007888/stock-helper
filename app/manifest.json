@@ -15,7 +15,8 @@
     ]
   },
   "permissions": [
-    "http://hq.sinajs.cn/list=*"
+    "http://hq.sinajs.cn/list=*",
+    "http://suggest3.sinajs.cn/suggest/"
   ],
   "browser_action": {
     "default_icon": {

@@ -1,5 +1,5 @@
 var normalStock = {
-  sh: ['600', '601'],
+  sh: ['600', '601','603'],
   sz: ['000'],
   ms: ['002'],
   cy: ['300'],
@@ -26,6 +26,9 @@ export function check(shock) {
       isNormal = true;
     }
   }
+  console.log(shock)
+  console.log(normalStockArr)
+  console.log(isNormal)
   return isNormal;
 }
 
@@ -37,16 +40,20 @@ export function getRightShock(shock) {
     normalStock['shB'],
     normalStock['shN'],
     normalStock['shP']
-	);
+  );
   // console.log(shArr);
-	
+
   for (let i = 0; i < shArr.length; i++) {
     const element = shArr[i];
     if (element == firstStock) {
       return 'sh' + shock;
     }
-	}
-	
+  }
+
   return 'sz' + shock;
 }
 
+export function getFixedNum(num, digit) {
+  digit = digit ? digit : 2;
+  return Number(Number(num).toFixed(digit));
+}
