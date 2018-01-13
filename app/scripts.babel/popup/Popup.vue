@@ -84,7 +84,7 @@
             :fetch-suggestions="querySearch"
             :trigger-on-focus="false"
             @select="handleSelect"
-            placeholder="请输入6位股票代码"
+            placeholder="请输入股票代码或股票名"
             clearable>
           </el-autocomplete>
         </el-form-item>
@@ -109,17 +109,18 @@ import { getSuggestList, getStockDetail } from './api/former';
 export default {
   data() {
     var checkStock = (rule, value, callback) => {
-      console.log(this.formInline.code)
+      console.log(this.formInline.code);
       setTimeout(() => {
         if (!check(this.formInline.code.slice(-6))) {
           callback(new Error('请输入正确的股票代码'));
         } else {
           callback();
         }
-      },500)
+      }, 500);
     };
     var checkRepeat = (rule, value, callback) => {
-      if (this.stockCodeList.indexOf(this.formInline.code.slice(-8)) > -1) {
+
+      if (this.localStock.indexOfAtt(value.slice(-8), 'code') > -1) {
         callback(new Error('股票已存在，请勿重复添加！'));
       } else {
         callback();
@@ -128,9 +129,9 @@ export default {
     return {
       lodingMsg: 'loading...',
       stocks: [],
-      costList: [],
       suggests: [],
-      stockCodeList: [],
+      localStock: [],
+      stockList: [],
       formInline: {
         code: '',
         cost: ''
@@ -149,36 +150,39 @@ export default {
   },
   mounted() {
     setInterval(() => {
-      this._getALLStock(this.stockCodeList, this.costList);
+      this._getALLStock(this.localStock);
     }, 10000);
   },
   watch: {
-    stockCodeList: function() {
-      localStorage.stockCodeList = this.stockCodeList;
-      console.log('refresh stockCodeList', this.stockCodeList);
-    },
     stocks: function() {
-      console.log('refresh stocks', this.stocks);
+      console.log('watch stocks', this.stocks);
     },
-    costList: function() {
-      localStorage.costList = this.costList;
+    localStock: function() {
+      localStorage.localStock = JSON.stringify(this.localStock);
     }
   },
   methods: {
     querySearch(queryString, cb) {
       getStockBySuggest(queryString).then(res => {
-        console.log(getSuggestList(res))
-        cb(getSuggestList(res))
-      })
+        var suggestList = getSuggestList(res)
+        var result = queryString ? suggestList.filter(this.createFilter(queryString)) : suggestList
+        cb(result)
+      });
+    },
+    createFilter(queryString) {
+      return (restaurant) => {
+        // return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        return (check(restaurant.value.slice(-6)))
+      };
     },
     handleSelect(item) {
       this.formInline.code = item.value;
     },
     cellClassName(rows, columns, rowIndex, columnIndex) {
-      if (rows.columnIndex != '2' && rows.columnIndex != '3' ) {
-        return ''
+      if (rows.columnIndex != '2' && rows.columnIndex != '3') {
+        return '';
       } else {
-        return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down'
+        return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down';
       }
     },
     formatter(row, column) {
@@ -186,10 +190,7 @@ export default {
     },
     deleteRow(index, rows) {
       var that = rows;
-      // console.log(index)
-      console.log('row', rows)
-      this.stockCodeList.remove(that.code);
-      this.costList.remove(that.cost);
+      this.localStock.splice(this.localStock.indexOfAtt(that.code,'code'), 1)
       this.stocks.remove(that);
     },
     addStock(formName) {
@@ -204,40 +205,27 @@ export default {
       });
     },
     _initGetStock() {
-      const conShock = 'sz002183';
-      this.stockCodeList = (localStorage.stockCodeList &&
-        localStorage.stockCodeList.split(',')) || [conShock];
-      this.costList = (localStorage.costList && localStorage.costList.split(',')) || [0];
-        
-      this._getALLStock(this.stockCodeList, this.costList);
-        
+      const conShock = [{ cost: 0, code: 'sz002183' }];
+      this.localStock = (localStorage.localStock && JSON.parse(localStorage.localStock).length>0) ? JSON.parse(localStorage.localStock): conShock;
+      this._getALLStock(this.localStock);
     },
-    _getALLStock(allStock, allCost) {
+    _getALLStock(allStock) {
       for (let i = 0; i < allStock.length; i++) {
         var that = this;
         setTimeout(() => {
-          this._getStockByCode(allStock[i], allCost[i]);
+          this._getStockByCode(allStock[i].code, allStock[i].cost);
         }, 30);
       }
     },
     _getStockByCode(code, cost) {
-      var thatCost = cost;
-
       getStockByCode(code).then(res => {
-        var stockObj = getStockDetail(res, code, thatCost)
+        var stockObj = getStockDetail(res, code, cost);
 
-        var indexCode = this.stockCodeList.indexOf(code);
-        
-        if (indexCode == -1 && stockObj) {
-          this.formInline.code = '';
-          this.formInline.cost = '';
-          this.stocks.push(stockObj);
-          this.stockCodeList.push(code);
-          this.costList.push(cost);
-        } else if (indexCode >= -1  && stockObj) {
-          this.stocks.splice(indexCode, 1, stockObj);
-          this.stockCodeList.splice(indexCode, 1, code);
-          this.costList.splice(indexCode, 1, cost);
+        if (stockObj) {
+          var idxOfStocks = this.stocks.indexOfAtt(code, 'code')
+          var idxOfLocalStock = this.localStock.indexOfAtt(code, 'code')
+          idxOfStocks >= 0 ? this.stocks.splice(idxOfStocks, 1, stockObj) : this.stocks.push(stockObj)
+          idxOfLocalStock < 0 && this.localStock.push({ code: code, cost: cost }) && (this.formInline.code = '' , this.formInline.cost = '')
         }
       });
     }
@@ -272,39 +260,43 @@ html {
 }
 
 .stock-up .cell, .stock-down .cell {
-    color: #fff;
-    font-weight: 700;
-    height: 1.25rem;
-    line-height: 1.25rem;
-    width: 80%;
-    border-radius: 0.25rem;
+  color: #fff;
+  font-weight: 700;
+  height: 1.25rem;
+  line-height: 1.25rem;
+  width: 80%;
+  border-radius: 0.25rem;
 }
 
 .stock-up .cell {
-    background-color: rgba(255, 75, 75, 1);
+  background-color: rgba(255, 75, 75, 1);
 }
 
-.stock-down .cell{
-    background-color: rgba(15, 175, 75, 1);
+.stock-down .cell {
+  background-color: rgba(15, 175, 75, 1);
 }
 
-.el-table tbody .el-table_1_column_1 .cell
-  line-height 0.8rem
-  width 5rem 
+.el-table tbody .el-table_1_column_1 .cell {
+  line-height: 0.8rem;
+  width: 5rem;
+}
 
-
-a.stock-link 
+a.stock-link {
   font-size: 0.8rem;
   color: black;
   font-weight: 500;
   text-decoration: none;
-  .stock-code
-    display block
-    font-size .5rem
-    font-weight 300
 
+  .stock-code {
+    display: block;
+    font-size: 0.5rem;
+    font-weight: 300;
+  }
+}
 
-.el-scrollbar
-  .el-autocomplete-suggestion__wrap
-    max-height 5rem
+.el-scrollbar {
+  .el-autocomplete-suggestion__wrap {
+    max-height: 5rem;
+  }
+}
 </style>

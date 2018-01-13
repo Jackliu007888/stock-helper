@@ -52,8 +52,8 @@ export function getSuggestList(res) {
     const element = itemArr[i];
     let detailArr = element.split(',')
     let name = detailArr[4]
-    let stock = detailArr[3]
-    newArr.push({value:name + '-' + stock})
+    let code = detailArr[3]
+    newArr.push({value:name + '-' + code})
   }
   return newArr
 }

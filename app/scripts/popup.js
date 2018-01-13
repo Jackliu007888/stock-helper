@@ -12667,7 +12667,8 @@ exports.default = {
       }, 500);
     };
     var checkRepeat = function checkRepeat(rule, value, callback) {
-      if (_this.stockCodeList.indexOf(_this.formInline.code.slice(-8)) > -1) {
+
+      if (_this.localStock.indexOfAtt(value.slice(-8), 'code') > -1) {
         callback(new Error('股票已存在，请勿重复添加！'));
       } else {
         callback();
@@ -12676,9 +12677,9 @@ exports.default = {
     return {
       lodingMsg: 'loading...',
       stocks: [],
-      costList: [],
       suggests: [],
-      stockCodeList: [],
+      localStock: [],
+      stockList: [],
       formInline: {
         code: '',
         cost: ''
@@ -12695,28 +12696,33 @@ exports.default = {
     var _this2 = this;
 
     setInterval(function () {
-      _this2._getALLStock(_this2.stockCodeList, _this2.costList);
+      _this2._getALLStock(_this2.localStock);
     }, 10000);
   },
 
   watch: {
-    stockCodeList: function stockCodeList() {
-      localStorage.stockCodeList = this.stockCodeList;
-      console.log('refresh stockCodeList', this.stockCodeList);
-    },
     stocks: function stocks() {
-      console.log('refresh stocks', this.stocks);
+      console.log('watch stocks', this.stocks);
     },
-    costList: function costList() {
-      localStorage.costList = this.costList;
+    localStock: function localStock() {
+      localStorage.localStock = JSON.stringify(this.localStock);
     }
   },
   methods: {
     querySearch: function querySearch(queryString, cb) {
+      var _this3 = this;
+
       (0, _api.getStockBySuggest)(queryString).then(function (res) {
-        console.log((0, _former.getSuggestList)(res));
-        cb((0, _former.getSuggestList)(res));
+        var suggestList = (0, _former.getSuggestList)(res);
+        var result = queryString ? suggestList.filter(_this3.createFilter(queryString)) : suggestList;
+        cb(result);
       });
+    },
+    createFilter: function createFilter(queryString) {
+      return function (restaurant) {
+        // return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        return (0, _base.check)(restaurant.value.slice(-6));
+      };
     },
     handleSelect: function handleSelect(item) {
       this.formInline.code = item.value;
@@ -12733,40 +12739,35 @@ exports.default = {
     },
     deleteRow: function deleteRow(index, rows) {
       var that = rows;
-      // console.log(index)
-      console.log('row', rows);
-      this.stockCodeList.remove(that.code);
-      this.costList.remove(that.cost);
+      this.localStock.splice(this.localStock.indexOfAtt(that.code, 'code'), 1);
       this.stocks.remove(that);
     },
     addStock: function addStock(formName) {
-      var _this3 = this;
+      var _this4 = this;
 
       var code = this.formInline.code.slice(-8);
       var cost = this.formInline.cost || 0;
       this.$refs[formName].validate(function (valid) {
         if (valid) {
-          _this3._getStockByCode(code, cost);
+          _this4._getStockByCode(code, cost);
         } else {
           return;
         }
       });
     },
     _initGetStock: function _initGetStock() {
-      var conShock = 'sz002183';
-      this.stockCodeList = localStorage.stockCodeList && localStorage.stockCodeList.split(',') || [conShock];
-      this.costList = localStorage.costList && localStorage.costList.split(',') || [0];
-
-      this._getALLStock(this.stockCodeList, this.costList);
+      var conShock = [{ cost: 0, code: 'sz002183' }];
+      this.localStock = localStorage.localStock && JSON.parse(localStorage.localStock).length > 0 ? JSON.parse(localStorage.localStock) : conShock;
+      this._getALLStock(this.localStock);
     },
-    _getALLStock: function _getALLStock(allStock, allCost) {
-      var _this4 = this;
+    _getALLStock: function _getALLStock(allStock) {
+      var _this5 = this;
 
       var _loop = function _loop(i) {
-        that = _this4;
+        that = _this5;
 
         setTimeout(function () {
-          _this4._getStockByCode(allStock[i], allCost[i]);
+          _this5._getStockByCode(allStock[i].code, allStock[i].cost);
         }, 30);
       };
 
@@ -12777,25 +12778,16 @@ exports.default = {
       }
     },
     _getStockByCode: function _getStockByCode(code, cost) {
-      var _this5 = this;
-
-      var thatCost = cost;
+      var _this6 = this;
 
       (0, _api.getStockByCode)(code).then(function (res) {
-        var stockObj = (0, _former.getStockDetail)(res, code, thatCost);
+        var stockObj = (0, _former.getStockDetail)(res, code, cost);
 
-        var indexCode = _this5.stockCodeList.indexOf(code);
-
-        if (indexCode == -1 && stockObj) {
-          _this5.formInline.code = '';
-          _this5.formInline.cost = '';
-          _this5.stocks.push(stockObj);
-          _this5.stockCodeList.push(code);
-          _this5.costList.push(cost);
-        } else if (indexCode >= -1 && stockObj) {
-          _this5.stocks.splice(indexCode, 1, stockObj);
-          _this5.stockCodeList.splice(indexCode, 1, code);
-          _this5.costList.splice(indexCode, 1, cost);
+        if (stockObj) {
+          var idxOfStocks = _this6.stocks.indexOfAtt(code, 'code');
+          var idxOfLocalStock = _this6.localStock.indexOfAtt(code, 'code');
+          idxOfStocks >= 0 ? _this6.stocks.splice(idxOfStocks, 1, stockObj) : _this6.stocks.push(stockObj);
+          idxOfLocalStock < 0 && _this6.localStock.push({ code: code, cost: cost }) && (_this6.formInline.code = '', _this6.formInline.cost = '');
         }
       });
     }
@@ -13187,7 +13179,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.check = check;
 exports.getRightShock = getRightShock;
 exports.getFixedNum = getFixedNum;
-var normalStock = {
+var normalCode = {
   sh: ['600', '601', '603'],
   sz: ['000'],
   ms: ['002'],
@@ -13199,43 +13191,24 @@ var normalStock = {
   shP: ['700'],
   szP: ['080']
 };
-var normalStockArr = function () {
+var normalCodeArr = function () {
   var tempArr = [];
-  for (var key in normalStock) {
-    tempArr = tempArr.concat(normalStock[key]);
+  for (var key in normalCode) {
+    tempArr = tempArr.concat(normalCode[key]);
   }
   return tempArr;
 }();
 
-function check(shock) {
-  var firstStock = shock.slice(0, 3);
-  var isNormal = false;
-  for (var i = 0; i < normalStockArr.length; i++) {
-    if (firstStock == normalStockArr[i]) {
-      isNormal = true;
-    }
-  }
-  console.log(shock);
-  console.log(normalStockArr);
-  console.log(isNormal);
-  return isNormal;
+function check(shortCode) {
+  var firstCode = shortCode.slice(0, 3);
+  return normalCodeArr.indexOf(firstCode) >= 0 ? true : false;
 }
 
-function getRightShock(shock) {
-  // console.log(shock);
+function getRightShock(shortCode) {
 
-  var firstStock = shock.slice(0, 3);
-  var shArr = normalStock['sh'].concat(normalStock['shB'], normalStock['shN'], normalStock['shP']);
-  // console.log(shArr);
-
-  for (var i = 0; i < shArr.length; i++) {
-    var element = shArr[i];
-    if (element == firstStock) {
-      return 'sh' + shock;
-    }
-  }
-
-  return 'sz' + shock;
+  var firstCode = shortCode.slice(0, 3);
+  var shArr = normalCode['sh'].concat(normalCode['shB'], normalCode['shN'], normalCode['shP']);
+  return shArr.indexOf(firstCode) >= 0 ? 'sh' + code : 'sz' + code;
 }
 
 function getFixedNum(num, digit) {
@@ -13273,6 +13246,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 Array.prototype.indexOf = function (val) {
   for (var i = 0; i < this.length; i++) {
     if (this[i] == val) return i;
+  }
+  return -1;
+};
+
+Array.prototype.indexOfAtt = function (val, attribute) {
+  for (var i = 0; i < this.length; i++) {
+    if (this[i][attribute] == val) return i;
   }
   return -1;
 };
@@ -55284,8 +55264,8 @@ function getSuggestList(res) {
     var element = itemArr[i];
     var detailArr = element.split(',');
     var name = detailArr[4];
-    var stock = detailArr[3];
-    newArr.push({ value: name + '-' + stock });
+    var code = detailArr[3];
+    newArr.push({ value: name + '-' + code });
   }
   return newArr;
 }
@@ -55445,7 +55425,7 @@ var render = function() {
                   attrs: {
                     "fetch-suggestions": _vm.querySearch,
                     "trigger-on-focus": false,
-                    placeholder: "请输入6位股票代码",
+                    placeholder: "请输入股票代码或股票名",
                     clearable: ""
                   },
                   on: { select: _vm.handleSelect },
