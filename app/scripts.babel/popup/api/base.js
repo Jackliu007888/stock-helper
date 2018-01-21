@@ -10,6 +10,15 @@ var normalCode = {
   shP: ['700'],
   szP: ['080']
 };
+var colWidth = {
+  init: 90,
+  curPrice: 90,
+  range: 90,
+  rangePrice: 90,
+  profit: 90,
+  cost: 90,
+  set: 140
+};
 var normalCodeArr = (function() {
   var tempArr = [];
   for (let key in normalCode) {
@@ -37,4 +46,8 @@ export function getRightShock(shortCode) {
 export function getFixedNum(num, digit) {
   digit = digit ? digit : 2;
   return Number(Number(num).toFixed(digit));
+}
+
+export function getColWidth(col) {
+  return colWidth[col];
 }

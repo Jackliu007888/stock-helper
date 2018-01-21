@@ -1,12 +1,13 @@
 <template>
-  <div class="stock">
+  <div class="stock" ref="stock">
     <!-- <h1>{{lodingMsg}}</h1> -->
     <div class="header-line">
       <el-table
+        align="center"
+        header-align="center"
         size="mini"
         :data="stocks"
         style="width: 100%"
-        :default-sort = "{prop: 'range', order: 'descending'}"
         :cell-class-name = 'cellClassName'
         >
         <el-table-column
@@ -22,6 +23,7 @@
         </el-table-column> -->
 
         <el-table-column
+          v-if="colList.indexOf('curPrice') != -1"
           prop="curPrice"
           label="最新价"
           width="90"
@@ -29,14 +31,16 @@
         </el-table-column>
           
         <el-table-column
+          v-if="colList.indexOf('range') != -1"
           label="涨跌幅"
           prop="range"
           width="90"
-          :formatter="formatter"      
+          :formatter="formatter"
           sortable>
         </el-table-column>        
         
         <el-table-column
+          v-if="colList.indexOf('rangePrice') != -1"
           prop="rangePrice"
           label="涨跌额"
           :class-name="stocks.rangePrice > 0 ? 'a' : 'b'"
@@ -45,24 +49,41 @@
         </el-table-column>
 
         <el-table-column
+          v-if="colList.indexOf('profit') != -1"
           prop="profit"
           label="盈亏"
-          width="90"      
+          width="90"
           sortable>
         </el-table-column>
 
         <el-table-column
+          v-if="colList.indexOf('cost') != -1"
           prop="cost"
-          label="成本">
+          label="成本"
+          width="90">
         </el-table-column>
           
         <el-table-column
-          label="操作">
+          label="操作"
+          width="140"
+          v-if="setModeChecked"
+          >
           <template slot-scope="scope">
+            <el-button
+              @click.native.prevent=""
+              type="text"
+              size="mini">
+              上移
+            </el-button>
+            <el-button
+              @click.native.prevent=""
+              type="text"
+              size="mini">
+              下移
+            </el-button>
             <el-button
               @click.native.prevent="deleteRow(scope.$index,  scope.row)"
               type="text"
-              width="45"
               size="mini">
               移除
             </el-button>
@@ -70,7 +91,7 @@
         </el-table-column>
       </el-table>
     </div>
-    <div class="input">
+    <div class="input" v-if="setModeChecked">
       <el-form 
         :inline="true" 
         ref="formInline" 
@@ -100,11 +121,31 @@
         </el-form-item>
       </el-form>
     </div>
+    <div v-if="setModeChecked">
+      <template>
+        <el-checkbox-group v-model="colList" :min="1">
+          <el-checkbox label="curPrice">最新价</el-checkbox>
+          <el-checkbox label="range">涨跌幅</el-checkbox>
+          <el-checkbox label="rangePrice">涨跌额</el-checkbox>
+          <el-checkbox label="profit">盈亏</el-checkbox>
+          <el-checkbox label="cost">成本</el-checkbox>
+        </el-checkbox-group>
+      </template>
+    </div>
+    <div class="progress-wrapper">
+      <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
+    </div>
+    <div class="set-mode-checked-wrapper">
+      <el-switch
+        v-model="setModeChecked"
+        active-text="设置">
+      </el-switch>
+    </div>
   </div>    
 </template>
 <script>
 import { getStockByCode, getStockBySuggest } from './api/api';
-import { check, getRightShock } from './api/base';
+import { check, getRightShock, getColWidth, getInitStockWidth } from './api/base';
 import { getSuggestList, getStockDetail } from './api/former';
 export default {
   data() {
@@ -136,6 +177,10 @@ export default {
         code: '',
         cost: ''
       },
+      setModeChecked: true,
+      colList: [],
+      stockWidth: 0,
+      progress: 0,
       rules: {
         code: [
           { required: true, message: '请输入股票名称或代码', trigger: 'blur' },
@@ -147,11 +192,15 @@ export default {
   },
   created() {
     this._initGetStock();
+    console.log(localStorage.localStock);
   },
   mounted() {
     setInterval(() => {
       this._getALLStock(this.localStock);
     }, 10000);
+    setInterval(() => {
+      this._progressIncrease();
+    }, 100);
   },
   watch: {
     stocks: function() {
@@ -159,6 +208,16 @@ export default {
     },
     localStock: function() {
       localStorage.localStock = JSON.stringify(this.localStock);
+    },
+    stockWidth: function(val) {
+      this.$refs.stock.style.width = val.toString() + 'px';
+    },
+    colList: function() {
+      localStorage.colList = JSON.stringify(this.colList);
+      this._setStockWidth();
+    },
+    setModeChecked: function(val) {
+      this._setStockWidth();
     }
   },
   methods: {
@@ -179,9 +238,7 @@ export default {
       this.formInline.code = item.value;
     },
     cellClassName(rows, columns, rowIndex, columnIndex) {
-      if (rows.columnIndex != '2' && rows.columnIndex != '3') {
-        return '';
-      } else {
+      if(rows.column.label == '涨跌幅' || rows.column.label == '涨跌额') {
         return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down';
       }
     },
@@ -206,7 +263,10 @@ export default {
     },
     _initGetStock() {
       const conShock = [{ cost: 0, code: 'sz002183' }];
-      this.localStock = (localStorage.localStock && JSON.parse(localStorage.localStock).length>0) ? JSON.parse(localStorage.localStock): conShock;
+      const colList = ['curPrice', 'range', 'rangePrice', 'profit', 'cost'];
+
+      this.colList = (localStorage.colList && JSON.parse(localStorage.colList).length > 0) ? JSON.parse(localStorage.colList): colList;
+      this.localStock = (localStorage.localStock && JSON.parse(localStorage.localStock).length > 0) ? JSON.parse(localStorage.localStock): conShock;
       this._getALLStock(this.localStock);
     },
     _getALLStock(allStock) {
@@ -228,6 +288,16 @@ export default {
           idxOfLocalStock < 0 && this.localStock.push({ code: code, cost: cost }) && (this.formInline.code = '' , this.formInline.cost = '')
         }
       });
+    },
+    _setStockWidth() {
+      var stockWidthTemp = this.setModeChecked ? getColWidth('init') + getColWidth('set') : getColWidth('init');
+      this.colList.forEach(function(val, idx) {
+        stockWidthTemp += getColWidth(val);
+      });
+      this.stockWidth = stockWidthTemp < 590 && this.setModeChecked ? 590 : stockWidthTemp;
+    },
+    _progressIncrease() {
+      this.progress = (this.progress + 1) % 101;
     }
   }
 };
@@ -245,7 +315,7 @@ html {
 }
 
 .stock {
-  width: 30rem;
+  // width: 680px;
   height: 100%;
   position: relative;
   // background-color #eee
@@ -276,6 +346,10 @@ html {
   background-color: rgba(15, 175, 75, 1);
 }
 
+td .cell {
+  margin:0 auto;
+}
+
 .el-table tbody .el-table_1_column_1 .cell {
   line-height: 0.8rem;
   width: 5rem;
@@ -299,4 +373,20 @@ a.stock-link {
     max-height: 5rem;
   }
 }
+
+.set-mode-checked-wrapper,.progress-wrapper {
+  display: inline-block;
+}
+
+.set-mode-checked-wrapper {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  float: right;
+}
+
+.progress-wrapper {
+  padding-top: 10px;
+  float: left;
+}
+
 </style>
