@@ -8,4 +8,4 @@ test/bower_components
 package
 .vscode
 */.DS_Store
-
+.vscode

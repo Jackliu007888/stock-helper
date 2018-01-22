@@ -25,8 +25,8 @@
         <el-table-column
           v-if="colList.indexOf('curPrice') != -1"
           prop="curPrice"
-          label="最新价"
-          width="90"
+          label="现价"
+          width="75"
           sortable>
         </el-table-column>
           
@@ -43,9 +43,29 @@
           v-if="colList.indexOf('rangePrice') != -1"
           prop="rangePrice"
           label="涨跌额"
-          :class-name="stocks.rangePrice > 0 ? 'a' : 'b'"
           width="90"      
           sortable>
+        </el-table-column>
+
+         <el-table-column
+          v-if="colList.indexOf('toPrice') != -1"
+          prop="toPrice"
+          label="今开"
+          width="45">
+        </el-table-column>
+
+        <el-table-column
+          v-if="colList.indexOf('highPrice') != -1"
+          prop="highPrice"
+          label="最高"
+          width="45">
+        </el-table-column>
+
+        <el-table-column
+          v-if="colList.indexOf('lowPrice') != -1"
+          prop="lowPrice"
+          label="最低"
+          width="45">
         </el-table-column>
 
         <el-table-column
@@ -60,12 +80,19 @@
           v-if="colList.indexOf('cost') != -1"
           prop="cost"
           label="成本"
-          width="90">
+          width="50">
         </el-table-column>
-          
+
+        <el-table-column
+          v-if="colList.indexOf('count') != -1"
+          prop="count"
+          label="持仓"
+          width="50">
+        </el-table-column>
+
         <el-table-column
           label="操作"
-          width="140"
+          width="130"
           v-if="setModeChecked"
           >
           <template slot-scope="scope">
@@ -109,13 +136,20 @@
             clearable>
           </el-autocomplete>
         </el-form-item>
-        <el-form-item label="持仓成本">
+        <el-form-item label="成本价">
           <el-input 
             v-model="formInline.cost" 
             placeholder="请输入持仓成本"
             clearable>
           </el-input>
-        </el-form-item>          
+        </el-form-item> 
+        <el-form-item label="持股量">
+          <el-input 
+            v-model="formInline.count" 
+            placeholder="请输入持股量"
+            clearable>
+          </el-input>
+        </el-form-item>                
         <el-form-item>
           <el-button type="primary" @click="addStock('formInline')">添加</el-button>
         </el-form-item>
@@ -128,7 +162,11 @@
           <el-checkbox label="range">涨跌幅</el-checkbox>
           <el-checkbox label="rangePrice">涨跌额</el-checkbox>
           <el-checkbox label="profit">盈亏</el-checkbox>
+          <el-checkbox label="toPrice">今开</el-checkbox>
+          <el-checkbox label="highPrice">最高</el-checkbox>
+          <el-checkbox label="lowPrice">最低</el-checkbox>
           <el-checkbox label="cost">成本</el-checkbox>
+          <el-checkbox label="count">持仓</el-checkbox>
         </el-checkbox-group>
       </template>
     </div>
@@ -175,9 +213,10 @@ export default {
       stockList: [],
       formInline: {
         code: '',
-        cost: ''
+        cost: '',
+        count:''
       },
-      setModeChecked: true,
+      setModeChecked: false,
       colList: [],
       stockWidth: 0,
       progress: 0,
@@ -253,17 +292,18 @@ export default {
     addStock(formName) {
       let code = this.formInline.code.slice(-8);
       let cost = this.formInline.cost || 0;
+      let count = this.formInline.count || 0;
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this._getStockByCode(code, cost);
+          this._getStockByCode(code, cost, count);
         } else {
           return;
         }
       });
     },
     _initGetStock() {
-      const conShock = [{ cost: 0, code: 'sz002183' }];
-      const colList = ['curPrice', 'range', 'rangePrice', 'profit', 'cost'];
+      const conShock = [{ cost: 0, code: 'sz002183',count:'0' }];
+      const colList = ['curPrice', 'range', 'rangePrice', 'profit'];
 
       this.colList = (localStorage.colList && JSON.parse(localStorage.colList).length > 0) ? JSON.parse(localStorage.colList): colList;
       this.localStock = (localStorage.localStock && JSON.parse(localStorage.localStock).length > 0) ? JSON.parse(localStorage.localStock): conShock;
@@ -273,19 +313,19 @@ export default {
       for (let i = 0; i < allStock.length; i++) {
         var that = this;
         setTimeout(() => {
-          this._getStockByCode(allStock[i].code, allStock[i].cost);
+          this._getStockByCode(allStock[i].code, allStock[i].cost, allStock[i].count);
         }, 30);
       }
     },
-    _getStockByCode(code, cost) {
+    _getStockByCode(code, cost, count) {
       getStockByCode(code).then(res => {
-        var stockObj = getStockDetail(res, code, cost);
+        var stockObj = getStockDetail(res, code, cost, count);
 
         if (stockObj) {
           var idxOfStocks = this.stocks.indexOfAtt(code, 'code')
           var idxOfLocalStock = this.localStock.indexOfAtt(code, 'code')
           idxOfStocks >= 0 ? this.stocks.splice(idxOfStocks, 1, stockObj) : this.stocks.push(stockObj)
-          idxOfLocalStock < 0 && this.localStock.push({ code: code, cost: cost }) && (this.formInline.code = '' , this.formInline.cost = '')
+          idxOfLocalStock < 0 && this.localStock.push({ code: code, cost: cost, count: count}) && (this.formInline.code = '' , this.formInline.cost = '', this.formInline.count = '')
         }
       });
     },
@@ -295,6 +335,7 @@ export default {
         stockWidthTemp += getColWidth(val);
       });
       this.stockWidth = stockWidthTemp < 590 && this.setModeChecked ? 590 : stockWidthTemp;
+      console.log(this.stockWidth)
     },
     _progressIncrease() {
       this.progress = (this.progress + 1) % 101;

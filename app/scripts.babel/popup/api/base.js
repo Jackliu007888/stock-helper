@@ -16,8 +16,12 @@ var colWidth = {
   range: 90,
   rangePrice: 90,
   profit: 90,
-  cost: 90,
-  set: 140
+  cost: 50,
+  count: 50,
+  toPrice: 45,
+  highPrice: 45,
+  lowPrice: 45,
+  set: 120
 };
 var normalCodeArr = (function() {
   var tempArr = [];

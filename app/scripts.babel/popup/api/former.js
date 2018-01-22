@@ -1,6 +1,6 @@
 import { getFixedNum } from './base'
 
-export function getStockDetail(res, code, cost) {
+export function getStockDetail(res, code, cost, count) {
   var result = res.split('=')[1];
   if (result.length <=10) {
     console.log('no result');
@@ -19,22 +19,25 @@ export function getStockDetail(res, code, cost) {
     time = Number(itemArr[9]); // 时间
   var rangePrice = getFixedNum(curPrice - yesPrice);
   var range = getFixedNum((curPrice - yesPrice) / yesPrice * 100);
-  var profit = cost == 0 ? 0 : getFixedNum(curPrice - cost);
+  cost = getFoxedNum(cost, 3)
+  var profit = cost == 0 ? 0 : getFixedNum((curPrice - cost) * count, 3);
+  
   // console.log(cost)
   // console.log(profit)
   var stockObj = {
     code,
     name,
-    // toPrice,
+    toPrice,
     yesPrice,
     curPrice,
-    // highPrice,
-    // lowPrice,
+    highPrice,
+    lowPrice,
     rangePrice,
     range,
     // date,
     // time,
     cost,
+    count,
     profit
   };
   return stockObj
