@@ -19,8 +19,8 @@ export function getStockDetail(res, code, cost, count) {
     time = Number(itemArr[9]); // 时间
   var rangePrice = getFixedNum(curPrice - yesPrice);
   var range = getFixedNum((curPrice - yesPrice) / yesPrice * 100);
-  cost = getFoxedNum(cost, 3)
-  var profit = cost == 0 ? 0 : getFixedNum((curPrice - cost) * count, 3);
+  cost = getFixedNum(cost, 3)
+  var profit = curPrice == 0 ? 0 : (cost == 0 ? 0 : getFixedNum((curPrice - cost) * count, 3))
   
   // console.log(cost)
   // console.log(profit)
