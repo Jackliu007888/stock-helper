@@ -14,8 +14,9 @@
 * 查看实时股价、涨跌幅、涨跌额、盈亏、今开、最高价、最低价、成本、持仓
 * 支持按实时股价、涨跌幅、涨跌额、盈亏排序
 * 支持按股票名称、股票代码模糊匹配
-* 支持自定义设置
-* 支持查看动态更新进度条
+* 支持自定义设置 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
+* 支持查看动态更新进度条 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
+* 支持自定义（手动）排序 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
 
 ### 分支:
 

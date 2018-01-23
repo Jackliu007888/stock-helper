@@ -6,9 +6,10 @@
         align="center"
         header-align="center"
         size="mini"
-        :data="stocks"
+        :data="sortStocks"
         style="width: 100%"
         :cell-class-name = 'cellClassName'
+        ref="stockTable"
         >
         <el-table-column
           label="股票">
@@ -26,8 +27,8 @@
           v-if="colList.indexOf('curPrice') != -1"
           prop="curPrice"
           label="现价"
-          width="75"
-          sortable>
+          width="90"
+          :sortable="!setModeChecked">
         </el-table-column>
           
         <el-table-column
@@ -36,7 +37,7 @@
           prop="range"
           width="90"
           :formatter="formatter"
-          sortable>
+          :sortable="!setModeChecked">
         </el-table-column>        
         
         <el-table-column
@@ -44,7 +45,7 @@
           prop="rangePrice"
           label="涨跌额"
           width="90"      
-          sortable>
+          :sortable="!setModeChecked">
         </el-table-column>
 
          <el-table-column
@@ -73,7 +74,7 @@
           prop="profit"
           label="盈亏"
           width="90"
-          sortable>
+          :sortable="!setModeChecked">
         </el-table-column>
 
         <el-table-column
@@ -97,19 +98,21 @@
           >
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent=""
+              @click.native.prevent="moveUp(scope.$index)"
+              :disabled="scope.$index == 0"
               type="text"
               size="mini">
               上移
             </el-button>
             <el-button
-              @click.native.prevent=""
+              @click.native.prevent="moveDown(scope.$index)"
+              :disabled="scope.$index+1 == localStockLength"
               type="text"
               size="mini">
               下移
             </el-button>
             <el-button
-              @click.native.prevent="deleteRow(scope.$index,  scope.row)"
+              @click.native.prevent="deleteRow(scope.$index, scope.row)"
               type="text"
               size="mini">
               移除
@@ -231,7 +234,6 @@ export default {
   },
   created() {
     this._initGetStock();
-    console.log(localStorage.localStock);
   },
   mounted() {
     setInterval(() => {
@@ -257,6 +259,21 @@ export default {
     },
     setModeChecked: function(val) {
       this._setStockWidth();
+      if(val) {
+        this.$refs.stockTable.clearSort();
+      }
+    }
+  },
+  computed: {
+    sortStocks() {
+      var stocksTemp = this.stocks;
+      var that = this;
+      return stocksTemp.sort(function(a, b){
+        return that.localStock.indexOfAtt(a.code, 'code') - that.localStock.indexOfAtt(b.code, 'code');
+      });
+    },
+    localStockLength() {
+      return this.localStock.length;
     }
   },
   methods: {
@@ -283,6 +300,26 @@ export default {
     },
     formatter(row, column) {
       return row.range + '%';
+    },
+    moveUp(index) {
+      this.localStock.splice(
+        this.localStock.indexOfAtt(this.stocks[index-1].code,'code'),
+        0,
+        this.localStock.splice(
+          this.localStock.indexOfAtt(this.stocks[index].code,'code'), 
+          1
+        )[0]
+      );
+    },
+    moveDown(index) {
+      this.localStock.splice(
+        this.localStock.indexOfAtt(this.stocks[index+1].code,'code'),
+        0,
+        this.localStock.splice(
+          this.localStock.indexOfAtt(this.stocks[index].code,'code'), 
+          1
+        )[0]
+      );
     },
     deleteRow(index, rows) {
       var that = rows;
@@ -334,8 +371,7 @@ export default {
       this.colList.forEach(function(val, idx) {
         stockWidthTemp += getColWidth(val);
       });
-      this.stockWidth = stockWidthTemp < 590 && this.setModeChecked ? 590 : stockWidthTemp;
-      console.log(this.stockWidth)
+      this.stockWidth = stockWidthTemp < 600 && this.setModeChecked ? 600 : stockWidthTemp;
     },
     _progressIncrease() {
       this.progress = (this.progress + 1) % 101;
