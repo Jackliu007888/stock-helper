@@ -12695,7 +12695,6 @@ exports.default = {
   },
   created: function created() {
     this._initGetStock();
-    console.log(localStorage.localStock);
   },
   mounted: function mounted() {
     var _this2 = this;
@@ -12724,6 +12723,21 @@ exports.default = {
     },
     setModeChecked: function setModeChecked(val) {
       this._setStockWidth();
+      if (val) {
+        this.$refs.stockTable.clearSort();
+      }
+    }
+  },
+  computed: {
+    sortStocks: function sortStocks() {
+      var stocksTemp = this.stocks;
+      var that = this;
+      return stocksTemp.sort(function (a, b) {
+        return that.localStock.indexOfAtt(a.code, 'code') - that.localStock.indexOfAtt(b.code, 'code');
+      });
+    },
+    localStockLength: function localStockLength() {
+      return this.localStock.length;
     }
   },
   methods: {
@@ -12753,6 +12767,12 @@ exports.default = {
     formatter: function formatter(row, column) {
       return row.range + '%';
     },
+    moveUp: function moveUp(index) {
+      this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index - 1].code, 'code'), 0, this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index].code, 'code'), 1)[0]);
+    },
+    moveDown: function moveDown(index) {
+      this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index + 1].code, 'code'), 0, this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index].code, 'code'), 1)[0]);
+    },
     deleteRow: function deleteRow(index, rows) {
       var that = rows;
       this.localStock.splice(this.localStock.indexOfAtt(that.code, 'code'), 1);
@@ -12772,7 +12792,7 @@ exports.default = {
       });
     },
     _initGetStock: function _initGetStock() {
-      var conShock = [{ cost: 0, code: 'sz002183' }];
+      var conShock = [{ code: 'sz002183', cost: 0 }];
       var colList = ['curPrice', 'range', 'rangePrice', 'profit', 'cost'];
 
       this.colList = localStorage.colList && JSON.parse(localStorage.colList).length > 0 ? JSON.parse(localStorage.colList) : colList;
@@ -12815,13 +12835,16 @@ exports.default = {
       this.colList.forEach(function (val, idx) {
         stockWidthTemp += (0, _base.getColWidth)(val);
       });
-      this.stockWidth = stockWidthTemp < 590 && this.setModeChecked ? 590 : stockWidthTemp;
+      this.stockWidth = stockWidthTemp < 600 && this.setModeChecked ? 600 : stockWidthTemp;
     },
     _progressIncrease: function _progressIncrease() {
       this.progress = (this.progress + 1) % 101;
     }
   }
 }; //
+//
+//
+//
 //
 //
 //
@@ -53915,7 +53938,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__ = __webpack_require__(69);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_261aa4cb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__ = __webpack_require__(190);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1703873e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__ = __webpack_require__(190);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -53937,13 +53960,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue___default.a,
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_261aa4cb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1703873e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "popup/Popup.vue"
+Component.options.__file = "popup\\Popup.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -53952,9 +53975,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-261aa4cb", Component.options)
+    hotAPI.createRecord("data-v-1703873e", Component.options)
   } else {
-    hotAPI.reload("data-v-261aa4cb", Component.options)
+    hotAPI.reload("data-v-1703873e", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -53975,13 +53998,13 @@ var content = __webpack_require__(165);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(166)("f8419be2", content, false);
+var update = __webpack_require__(166)("a9f5c88a", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-261aa4cb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-261aa4cb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1703873e\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1703873e\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -55389,12 +55412,13 @@ var render = function() {
         _c(
           "el-table",
           {
+            ref: "stockTable",
             staticStyle: { width: "100%" },
             attrs: {
               align: "center",
               "header-align": "center",
               size: "mini",
-              data: _vm.stocks,
+              data: _vm.sortStocks,
               "cell-class-name": _vm.cellClassName
             }
           },
@@ -55437,7 +55461,7 @@ var render = function() {
                     prop: "curPrice",
                     label: "最新价",
                     width: "90",
-                    sortable: ""
+                    sortable: !_vm.setModeChecked
                   }
                 })
               : _vm._e(),
@@ -55449,7 +55473,7 @@ var render = function() {
                     prop: "range",
                     width: "90",
                     formatter: _vm.formatter,
-                    sortable: ""
+                    sortable: !_vm.setModeChecked
                   }
                 })
               : _vm._e(),
@@ -55461,7 +55485,7 @@ var render = function() {
                     label: "涨跌额",
                     "class-name": _vm.stocks.rangePrice > 0 ? "a" : "b",
                     width: "90",
-                    sortable: ""
+                    sortable: !_vm.setModeChecked
                   }
                 })
               : _vm._e(),
@@ -55472,7 +55496,7 @@ var render = function() {
                     prop: "profit",
                     label: "盈亏",
                     width: "90",
-                    sortable: ""
+                    sortable: !_vm.setModeChecked
                   }
                 })
               : _vm._e(),
@@ -55494,10 +55518,15 @@ var render = function() {
                           _c(
                             "el-button",
                             {
-                              attrs: { type: "text", size: "mini" },
+                              attrs: {
+                                disabled: scope.$index == 0,
+                                type: "text",
+                                size: "mini"
+                              },
                               nativeOn: {
                                 click: function($event) {
                                   $event.preventDefault()
+                                  _vm.moveUp(scope.$index)
                                 }
                               }
                             },
@@ -55507,10 +55536,16 @@ var render = function() {
                           _c(
                             "el-button",
                             {
-                              attrs: { type: "text", size: "mini" },
+                              attrs: {
+                                disabled:
+                                  scope.$index + 1 == _vm.localStockLength,
+                                type: "text",
+                                size: "mini"
+                              },
                               nativeOn: {
                                 click: function($event) {
                                   $event.preventDefault()
+                                  _vm.moveDown(scope.$index)
                                 }
                               }
                             },
@@ -55718,7 +55753,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-261aa4cb", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-1703873e", esExports)
   }
 }
 
