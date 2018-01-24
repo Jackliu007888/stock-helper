@@ -92,8 +92,8 @@
         </el-table-column>
         <el-table-column
           label="走势图"
-          width="80"
-          v-if="colList.indexOf('chart') != -1"
+          width="120"
+          v-show="colList.indexOf('chart') != -1"
           >
           <template slot-scope="scope">
             <peity :type="setPeity.type" :options="setPeity.options" :data="lineData"></peity>
