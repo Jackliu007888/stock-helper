@@ -85,12 +85,20 @@
         </el-table-column>
 
         <el-table-column
-          v-if="colList.indexOf('count') != -1"
+          v-if="colList.indexOf('chart') != -1"
           prop="count"
           label="持仓"
           width="50">
         </el-table-column>
-
+        <el-table-column
+          label="走势图"
+          width="80"
+          v-if="colList.indexOf('chart') != -1"
+          >
+          <template slot-scope="scope">
+            <peity :type="setPeity.type" :options="setPeity.options" :data="lineData"></peity>
+          </template>
+        </el-table-column>
         <el-table-column
           label="操作"
           width="130"
@@ -170,6 +178,7 @@
           <el-checkbox label="lowPrice">最低</el-checkbox>
           <el-checkbox label="cost">成本</el-checkbox>
           <el-checkbox label="count">持仓</el-checkbox>
+          <el-checkbox label="chart">走势图</el-checkbox>
         </el-checkbox-group>
       </template>
     </div>
@@ -185,9 +194,15 @@
   </div>    
 </template>
 <script>
-import { getStockByCode, getStockBySuggest } from './api/api';
-import { check, getRightShock, getColWidth, getInitStockWidth } from './api/base';
-import { getSuggestList, getStockDetail } from './api/former';
+import Peity from 'vue-peity';
+import { getStockByCode, getStockBySuggest, getStockTrade } from './api/api';
+import {
+  check,
+  getRightShock,
+  getColWidth,
+  getInitStockWidth
+} from './api/base';
+import { getSuggestList, getStockDetail, getStockTradeDetail } from './api/former';
 export default {
   data() {
     var checkStock = (rule, value, callback) => {
@@ -201,7 +216,6 @@ export default {
       }, 500);
     };
     var checkRepeat = (rule, value, callback) => {
-
       if (this.localStock.indexOfAtt(value.slice(-8), 'code') > -1) {
         callback(new Error('股票已存在，请勿重复添加！'));
       } else {
@@ -209,6 +223,16 @@ export default {
       }
     };
     return {
+      data: [1, 2, 3, 2, 2],
+      setPeity: {
+        type: 'line',
+        options: {
+          // delimiter，fill， height，max，min， stroke，strokeWidth和width。
+          width: 80,
+          height: 20,
+          stroke: "#3ca316",
+        }
+      },
       lodingMsg: 'loading...',
       stocks: [],
       suggests: [],
@@ -217,7 +241,7 @@ export default {
       formInline: {
         code: '',
         cost: '',
-        count:''
+        count: ''
       },
       setModeChecked: false,
       colList: [],
@@ -233,6 +257,9 @@ export default {
     };
   },
   created() {
+    getStockTrade('sz002183').then( res => {
+      this.data = getStockTradeDetail(res).toString()
+    })
     this._initGetStock();
   },
   mounted() {
@@ -259,17 +286,24 @@ export default {
     },
     setModeChecked: function(val) {
       this._setStockWidth();
-      if(val) {
+      if (val) {
         this.$refs.stockTable.clearSort();
       }
     }
   },
   computed: {
+    lineData() {
+      console.log(this.data.toString())
+      return this.data.toString();
+    },
     sortStocks() {
       var stocksTemp = this.stocks;
       var that = this;
-      return stocksTemp.sort(function(a, b){
-        return that.localStock.indexOfAtt(a.code, 'code') - that.localStock.indexOfAtt(b.code, 'code');
+      return stocksTemp.sort(function(a, b) {
+        return (
+          that.localStock.indexOfAtt(a.code, 'code') -
+          that.localStock.indexOfAtt(b.code, 'code')
+        );
       });
     },
     localStockLength() {
@@ -279,22 +313,24 @@ export default {
   methods: {
     querySearch(queryString, cb) {
       getStockBySuggest(queryString).then(res => {
-        var suggestList = getSuggestList(res)
-        var result = queryString ? suggestList.filter(this.createFilter(queryString)) : suggestList
-        cb(result)
+        var suggestList = getSuggestList(res);
+        var result = queryString
+          ? suggestList.filter(this.createFilter(queryString))
+          : suggestList;
+        cb(result);
       });
     },
     createFilter(queryString) {
-      return (restaurant) => {
+      return restaurant => {
         // return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-        return (check(restaurant.value.slice(-6)))
+        return check(restaurant.value.slice(-6));
       };
     },
     handleSelect(item) {
       this.formInline.code = item.value;
     },
     cellClassName(rows, columns, rowIndex, columnIndex) {
-      if(rows.column.label == '涨跌幅' || rows.column.label == '涨跌额') {
+      if (rows.column.label == '涨跌幅' || rows.column.label == '涨跌额') {
         return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down';
       }
     },
@@ -303,27 +339,27 @@ export default {
     },
     moveUp(index) {
       this.localStock.splice(
-        this.localStock.indexOfAtt(this.stocks[index-1].code,'code'),
+        this.localStock.indexOfAtt(this.stocks[index - 1].code, 'code'),
         0,
         this.localStock.splice(
-          this.localStock.indexOfAtt(this.stocks[index].code,'code'), 
+          this.localStock.indexOfAtt(this.stocks[index].code, 'code'),
           1
         )[0]
       );
     },
     moveDown(index) {
       this.localStock.splice(
-        this.localStock.indexOfAtt(this.stocks[index+1].code,'code'),
+        this.localStock.indexOfAtt(this.stocks[index + 1].code, 'code'),
         0,
         this.localStock.splice(
-          this.localStock.indexOfAtt(this.stocks[index].code,'code'), 
+          this.localStock.indexOfAtt(this.stocks[index].code, 'code'),
           1
         )[0]
       );
     },
     deleteRow(index, rows) {
       var that = rows;
-      this.localStock.splice(this.localStock.indexOfAtt(that.code,'code'), 1)
+      this.localStock.splice(this.localStock.indexOfAtt(that.code, 'code'), 1);
       this.stocks.remove(that);
     },
     addStock(formName) {
@@ -339,18 +375,29 @@ export default {
       });
     },
     _initGetStock() {
-      const conShock = [{ cost: 0, code: 'sz002183',count:'0' }];
-      const colList = ['curPrice', 'range', 'rangePrice', 'profit'];
+      const conShock = [{ cost: 0, code: 'sz002183', count: '0' }];
+      const colList = ['curPrice', 'range', 'rangePrice', 'profit', 'chart'];
 
-      this.colList = (localStorage.colList && JSON.parse(localStorage.colList).length > 0) ? JSON.parse(localStorage.colList): colList;
-      this.localStock = (localStorage.localStock && JSON.parse(localStorage.localStock).length > 0) ? JSON.parse(localStorage.localStock): conShock;
+      this.colList =
+        localStorage.colList && JSON.parse(localStorage.colList).length > 0
+          ? JSON.parse(localStorage.colList)
+          : colList;
+      this.localStock =
+        localStorage.localStock &&
+        JSON.parse(localStorage.localStock).length > 0
+          ? JSON.parse(localStorage.localStock)
+          : conShock;
       this._getALLStock(this.localStock);
     },
     _getALLStock(allStock) {
       for (let i = 0; i < allStock.length; i++) {
         var that = this;
         setTimeout(() => {
-          this._getStockByCode(allStock[i].code, allStock[i].cost, allStock[i].count);
+          this._getStockByCode(
+            allStock[i].code,
+            allStock[i].cost,
+            allStock[i].count
+          );
         }, 30);
       }
     },
@@ -359,23 +406,35 @@ export default {
         var stockObj = getStockDetail(res, code, cost, count);
 
         if (stockObj) {
-          var idxOfStocks = this.stocks.indexOfAtt(code, 'code')
-          var idxOfLocalStock = this.localStock.indexOfAtt(code, 'code')
-          idxOfStocks >= 0 ? this.stocks.splice(idxOfStocks, 1, stockObj) : this.stocks.push(stockObj)
-          idxOfLocalStock < 0 && this.localStock.push({ code: code, cost: cost, count: count}) && (this.formInline.code = '' , this.formInline.cost = '', this.formInline.count = '')
+          var idxOfStocks = this.stocks.indexOfAtt(code, 'code');
+          var idxOfLocalStock = this.localStock.indexOfAtt(code, 'code');
+          idxOfStocks >= 0
+            ? this.stocks.splice(idxOfStocks, 1, stockObj)
+            : this.stocks.push(stockObj);
+          idxOfLocalStock < 0 &&
+            this.localStock.push({ code: code, cost: cost, count: count }) &&
+            ((this.formInline.code = ''),
+            (this.formInline.cost = ''),
+            (this.formInline.count = ''));
         }
       });
     },
     _setStockWidth() {
-      var stockWidthTemp = this.setModeChecked ? getColWidth('init') + getColWidth('set') : getColWidth('init');
+      var stockWidthTemp = this.setModeChecked
+        ? getColWidth('init') + getColWidth('set')
+        : getColWidth('init');
       this.colList.forEach(function(val, idx) {
         stockWidthTemp += getColWidth(val);
       });
-      this.stockWidth = stockWidthTemp < 600 && this.setModeChecked ? 600 : stockWidthTemp;
+      this.stockWidth =
+        stockWidthTemp < 600 && this.setModeChecked ? 600 : stockWidthTemp;
     },
     _progressIncrease() {
       this.progress = (this.progress + 1) % 101;
     }
+  },
+  components: {
+    Peity
   }
 };
 </script>
@@ -424,7 +483,7 @@ html {
 }
 
 td .cell {
-  margin:0 auto;
+  margin: 0 auto;
 }
 
 .el-table tbody .el-table_1_column_1 .cell {
@@ -451,7 +510,7 @@ a.stock-link {
   }
 }
 
-.set-mode-checked-wrapper,.progress-wrapper {
+.set-mode-checked-wrapper, .progress-wrapper {
   display: inline-block;
 }
 
@@ -465,5 +524,4 @@ a.stock-link {
   padding-top: 10px;
   float: left;
 }
-
 </style>

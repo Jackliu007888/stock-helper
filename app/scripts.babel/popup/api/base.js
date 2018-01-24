@@ -21,6 +21,7 @@ var colWidth = {
   toPrice: 45,
   highPrice: 45,
   lowPrice: 45,
+  chart: 80,
   set: 120
 };
 var normalCodeArr = (function() {

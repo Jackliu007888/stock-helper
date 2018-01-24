@@ -1,10 +1,46 @@
-import { getFixedNum } from './base'
+import {
+  getFixedNum
+} from './base'
+
+export function getStockTradeDetail(res) {
+  // console.log(res)
+  try {
+    var trade_item_list = eval(`(function() {
+      ${res}
+      return trade_item_list
+    })()`)
+  } catch (e) {
+    console.log('error');
+    console.log(e.toString());
+  }
+  var revList = trade_item_list.reverse();
+
+  var resultList = []
+  for (let i = 0; i < revList.length; i++) {
+    let element = revList[i][2]
+    resultList.push(element)
+  }
+
+  // 放大趋势
+  var minVal = resultList.min()
+  var maxVal = resultList.max()
+  var times = parseInt(10 / (maxVal - minVal))
+  var mapResult = resultList.map((item, index, array) => {
+    return (item - minVal) * times
+  })
+  return mapResult
+}
+
+
+
+
+
 
 export function getStockDetail(res, code, cost, count) {
   var result = res.split('=')[1];
-  if (result.length <=10) {
+  if (result.length <= 10) {
     console.log('no result');
-    return ;
+    return;
   }
   var itemArr = result.split('"')[1].split(',');
   var name = itemArr[0],
@@ -21,7 +57,7 @@ export function getStockDetail(res, code, cost, count) {
   var range = getFixedNum((curPrice - yesPrice) / yesPrice * 100);
   cost = getFixedNum(cost, 3)
   var profit = curPrice == 0 ? 0 : (cost == 0 ? 0 : getFixedNum((curPrice - cost) * count, 3))
-  
+
   // console.log(cost)
   // console.log(profit)
   var stockObj = {
@@ -56,7 +92,9 @@ export function getSuggestList(res) {
     let detailArr = element.split(',')
     let name = detailArr[4]
     let code = detailArr[3]
-    newArr.push({value:name + '-' + code})
+    newArr.push({
+      value: name + '-' + code
+    })
   }
   return newArr
 }

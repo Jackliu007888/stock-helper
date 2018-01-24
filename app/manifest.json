@@ -2,6 +2,7 @@
   "name": "__MSG_appName__",
   "version": "0.0.1",
   "manifest_version": 2,
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "description": "__MSG_appDescription__",
   "icons": {
     "16": "images/Stock.png",
@@ -16,7 +17,8 @@
   },
   "permissions": [
     "http://hq.sinajs.cn/list=*",
-    "http://suggest3.sinajs.cn/suggest/"
+    "http://suggest3.sinajs.cn/suggest/",
+    "http://vip.stock.finance.sina.com.cn/quotes_service/view/"
   ],
   "browser_action": {
     "default_icon": {
