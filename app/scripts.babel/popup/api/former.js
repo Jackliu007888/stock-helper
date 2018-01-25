@@ -13,6 +13,17 @@ export function getStockTradeDetail(res) {
     console.log('error');
     console.log(e.toString());
   }
+  // 筛选100量级数据
+  var lenTimes =  trade_item_list.length > 100 ? parseInt(trade_item_list.length / 100) : 1
+  trade_item_list = trade_item_list.filter((item, index) => {
+    return index % lenTimes == 1
+  })
+
+  if (trade_item_list.length > 100) {
+
+  }
+
+
   var revList = trade_item_list.reverse();
 
   var resultList = []
@@ -76,6 +87,7 @@ export function getStockDetail(res, code, cost, count) {
     count,
     profit
   };
+  stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : []
   return stockObj
 }
 

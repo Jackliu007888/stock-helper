@@ -85,20 +85,12 @@
         </el-table-column>
 
         <el-table-column
-          v-if="colList.indexOf('chart') != -1"
+          v-if="colList.indexOf('count') != -1"
           prop="count"
           label="持仓"
           width="50">
         </el-table-column>
-        <el-table-column
-          label="走势图"
-          width="120"
-          v-show="colList.indexOf('chart') != -1"
-          >
-          <template slot-scope="scope">
-            <peity :type="setPeity.type" :options="setPeity.options" :data="lineData"></peity>
-          </template>
-        </el-table-column>
+       
         <el-table-column
           label="操作"
           width="130"
@@ -125,6 +117,16 @@
               size="mini">
               移除
             </el-button>
+          </template>
+        </el-table-column>
+         <el-table-column
+          fixed="right"
+          label="走势图"
+          width="120"
+          v-if="colList.indexOf('chart') != -1"
+          >
+          <template slot-scope="props">
+            <peity v-if="props.row.lineData.length" :type="setPeity.type" :options="setPeity.options" :data="props.row.lineData"></peity>
           </template>
         </el-table-column>
       </el-table>
@@ -194,7 +196,7 @@
   </div>    
 </template>
 <script>
-import Peity from 'vue-peity';
+import Peity from '../components/Peity.vue';
 import { getStockByCode, getStockBySuggest, getStockTrade } from './api/api';
 import {
   check,
@@ -202,7 +204,11 @@ import {
   getColWidth,
   getInitStockWidth
 } from './api/base';
-import { getSuggestList, getStockDetail, getStockTradeDetail } from './api/former';
+import {
+  getSuggestList,
+  getStockDetail,
+  getStockTradeDetail
+} from './api/former';
 export default {
   data() {
     var checkStock = (rule, value, callback) => {
@@ -230,7 +236,7 @@ export default {
           // delimiter，fill， height，max，min， stroke，strokeWidth和width。
           width: 80,
           height: 20,
-          stroke: "#3ca316",
+          stroke: '#3ca316'
         }
       },
       lodingMsg: 'loading...',
@@ -257,9 +263,6 @@ export default {
     };
   },
   created() {
-    getStockTrade('sz002183').then( res => {
-      this.data = getStockTradeDetail(res).toString()
-    })
     this._initGetStock();
   },
   mounted() {
@@ -282,6 +285,9 @@ export default {
     },
     colList: function() {
       localStorage.colList = JSON.stringify(this.colList);
+      if (this.colList.indexOf('chart') < 0) {
+        this.data = '1,1,1,1';
+      }
       this._setStockWidth();
     },
     setModeChecked: function(val) {
@@ -292,10 +298,7 @@ export default {
     }
   },
   computed: {
-    lineData() {
-      console.log(this.data.toString())
-      return this.data.toString();
-    },
+
     sortStocks() {
       var stocksTemp = this.stocks;
       var that = this;
@@ -311,6 +314,10 @@ export default {
     }
   },
   methods: {
+    lineData(index, row) {
+      console.log(this.data.toString());
+      return this.data.indexOfAtt('code', row.peity).toString();
+    },
     querySearch(queryString, cb) {
       getStockBySuggest(queryString).then(res => {
         var suggestList = getSuggestList(res);
@@ -398,8 +405,22 @@ export default {
             allStock[i].cost,
             allStock[i].count
           );
+          this._getStockTrade(allStock[i].code);
         }, 30);
       }
+    },
+    _getStockTrade(code) {
+      getStockTrade(code).then(res => {
+        this.data = getStockTradeDetail(res).toString();
+        var idxOfStocks = this.stocks.indexOfAtt(code, 'code');
+        var stocks = this.stocks
+        if(idxOfStocks>=0) {
+          stocks[idxOfStocks]['lineData'] = getStockTradeDetail(res).toString()
+          this.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks])
+        } else {
+          this.stocks.push({code, lineData});
+        }
+      });
     },
     _getStockByCode(code, cost, count) {
       getStockByCode(code).then(res => {
