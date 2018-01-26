@@ -27,7 +27,7 @@
           v-if="colList.indexOf('curPrice') != -1"
           prop="curPrice"
           label="现价"
-          width="90"
+          width="50"
           :sortable="!setModeChecked">
         </el-table-column>
           
@@ -35,7 +35,7 @@
           v-if="colList.indexOf('range') != -1"
           label="涨跌幅"
           prop="range"
-          width="90"
+          width="70"
           :formatter="formatter"
           :sortable="!setModeChecked">
         </el-table-column>        
@@ -44,7 +44,7 @@
           v-if="colList.indexOf('rangePrice') != -1"
           prop="rangePrice"
           label="涨跌额"
-          width="90"      
+          width="70"      
           :sortable="!setModeChecked">
         </el-table-column>
 
@@ -52,28 +52,28 @@
           v-if="colList.indexOf('toPrice') != -1"
           prop="toPrice"
           label="今开"
-          width="45">
+          width="40">
         </el-table-column>
 
         <el-table-column
           v-if="colList.indexOf('highPrice') != -1"
           prop="highPrice"
           label="最高"
-          width="45">
+          width="40">
         </el-table-column>
 
         <el-table-column
           v-if="colList.indexOf('lowPrice') != -1"
           prop="lowPrice"
           label="最低"
-          width="45">
+          width="40">
         </el-table-column>
 
         <el-table-column
           v-if="colList.indexOf('profit') != -1"
           prop="profit"
           label="盈亏"
-          width="90"
+          width="50"
           :sortable="!setModeChecked">
         </el-table-column>
 
@@ -81,19 +81,19 @@
           v-if="colList.indexOf('cost') != -1"
           prop="cost"
           label="成本"
-          width="50">
+          width="45">
         </el-table-column>
 
         <el-table-column
           v-if="colList.indexOf('count') != -1"
           prop="count"
           label="持仓"
-          width="50">
+          width="45">
         </el-table-column>
        
         <el-table-column
           label="操作"
-          width="130"
+          width="115"
           v-if="setModeChecked"
           >
           <template slot-scope="scope">
@@ -155,7 +155,8 @@
             placeholder="请输入持仓成本"
             clearable>
           </el-input>
-        </el-form-item> 
+        </el-form-item>
+        <br>
         <el-form-item label="持股量">
           <el-input 
             v-model="formInline.count" 
@@ -202,7 +203,7 @@ import {
   check,
   getRightShock,
   getColWidth,
-  getInitStockWidth
+  MIN_STOCKWIDTH_WITH_SET
 } from './api/base';
 import {
   getSuggestList,
@@ -298,7 +299,6 @@ export default {
     }
   },
   computed: {
-
     sortStocks() {
       var stocksTemp = this.stocks;
       var that = this;
@@ -448,7 +448,7 @@ export default {
         stockWidthTemp += getColWidth(val);
       });
       this.stockWidth =
-        stockWidthTemp < 600 && this.setModeChecked ? 600 : stockWidthTemp;
+        stockWidthTemp < MIN_STOCKWIDTH_WITH_SET && this.setModeChecked ? MIN_STOCKWIDTH_WITH_SET : stockWidthTemp;
     },
     _progressIncrease() {
       this.progress = (this.progress + 1) % 101;
@@ -544,5 +544,14 @@ a.stock-link {
 .progress-wrapper {
   padding-top: 10px;
   float: left;
+}
+
+td .cell,th .cell {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.el-checkbox-group .el-checkbox {
+  height: 28px;
 }
 </style>
