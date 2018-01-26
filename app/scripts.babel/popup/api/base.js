@@ -12,17 +12,17 @@ var normalCode = {
 };
 var colWidth = {
   init: 90,
-  curPrice: 90,
-  range: 90,
-  rangePrice: 90,
-  profit: 90,
-  cost: 50,
-  count: 50,
-  toPrice: 45,
-  highPrice: 45,
-  lowPrice: 45,
+  curPrice: 50,
+  range: 70,
+  rangePrice: 70,
+  profit: 50,
+  cost: 45,
+  count: 45,
+  toPrice: 40,
+  highPrice: 40,
+  lowPrice: 40,
   chart: 120,
-  set: 120
+  set: 115
 };
 var normalCodeArr = (function() {
   var tempArr = [];
@@ -31,6 +31,8 @@ var normalCodeArr = (function() {
   }
   return tempArr;
 })();
+
+export const MIN_STOCKWIDTH_WITH_SET = 520;
 
 export function check(shortCode) {
   var firstCode = shortCode.slice(0, 3);
