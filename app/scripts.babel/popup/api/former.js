@@ -87,7 +87,6 @@ export function getStockDetail(res, code, cost, count) {
     count,
     profit
   };
-  stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : []
   return stockObj
 }
 

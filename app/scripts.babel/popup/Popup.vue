@@ -27,6 +27,7 @@
           v-if="colList.indexOf('curPrice') != -1"
           prop="curPrice"
           label="现价"
+          :formatter="formatterFixedTwo"
           width="50"
           :sortable="!setModeChecked">
         </el-table-column>
@@ -44,7 +45,8 @@
           v-if="colList.indexOf('rangePrice') != -1"
           prop="rangePrice"
           label="涨跌额"
-          width="70"      
+          width="70"
+          :formatter="formatterFixedTwo"      
           :sortable="!setModeChecked">
         </el-table-column>
 
@@ -52,6 +54,7 @@
           v-if="colList.indexOf('toPrice') != -1"
           prop="toPrice"
           label="今开"
+          :formatter="formatterFixedTwo"
           width="40">
         </el-table-column>
 
@@ -59,6 +62,7 @@
           v-if="colList.indexOf('highPrice') != -1"
           prop="highPrice"
           label="最高"
+          :formatter="formatterFixedTwo"
           width="40">
         </el-table-column>
 
@@ -66,6 +70,7 @@
           v-if="colList.indexOf('lowPrice') != -1"
           prop="lowPrice"
           label="最低"
+          :formatter="formatterFixedTwo"
           width="40">
         </el-table-column>
 
@@ -91,6 +96,16 @@
           width="45">
         </el-table-column>
        
+         <el-table-column
+          label="走势图"
+          width="100"
+          v-if="colList.indexOf('chart') != -1"
+          >
+          <template slot-scope="props">
+            <peity v-if="props.row.lineData.length" :type="setPeity.type" :options="setPeity.options" :data="props.row.lineData"></peity>
+          </template>
+        </el-table-column>
+
         <el-table-column
           label="操作"
           width="115"
@@ -117,16 +132,6 @@
               size="mini">
               移除
             </el-button>
-          </template>
-        </el-table-column>
-         <el-table-column
-          fixed="right"
-          label="走势图"
-          width="120"
-          v-if="colList.indexOf('chart') != -1"
-          >
-          <template slot-scope="props">
-            <peity v-if="props.row.lineData.length" :type="setPeity.type" :options="setPeity.options" :data="props.row.lineData"></peity>
           </template>
         </el-table-column>
       </el-table>
@@ -230,14 +235,12 @@ export default {
       }
     };
     return {
-      data: [1, 2, 3, 2, 2],
       setPeity: {
         type: 'line',
         options: {
-          // delimiter，fill， height，max，min， stroke，strokeWidth和width。
-          width: 80,
-          height: 20,
-          stroke: '#3ca316'
+          stroke: '#3ca316',
+          width: 60,
+          height: 20
         }
       },
       lodingMsg: 'loading...',
@@ -273,6 +276,7 @@ export default {
     setInterval(() => {
       this._progressIncrease();
     }, 100);
+    this._getALLStockTrade(this.localStock);
   },
   watch: {
     stocks: function() {
@@ -338,11 +342,14 @@ export default {
     },
     cellClassName(rows, columns, rowIndex, columnIndex) {
       if (rows.column.label == '涨跌幅' || rows.column.label == '涨跌额') {
-        return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down';
+        return rows.row.rangePrice >= 0 ? 'stock-up' : 'stock-down';
       }
     },
     formatter(row, column) {
-      return row.range + '%';
+      return row.range.toFixed(2) + '%';
+    },
+    formatterFixedTwo(row, column) {
+       return (row[column['property']]).toFixed(2)
     },
     moveUp(index) {
       this.localStock.splice(
@@ -376,10 +383,19 @@ export default {
       this.$refs[formName].validate(valid => {
         if (valid) {
           this._getStockByCode(code, cost, count);
+          this._getStockTrade(code);
         } else {
           return;
         }
       });
+    },
+    _getALLStockTrade(allStock) {
+      for (let i = 0; i < allStock.length; i++) {
+        var that = this;
+        setTimeout(() => {
+          this._getStockTrade(allStock[i].code);
+        }, 30);
+      }
     },
     _initGetStock() {
       const conShock = [{ cost: 0, code: 'sz002183', count: '0' }];
@@ -405,7 +421,6 @@ export default {
             allStock[i].cost,
             allStock[i].count
           );
-          this._getStockTrade(allStock[i].code);
         }, 30);
       }
     },
@@ -413,12 +428,16 @@ export default {
       getStockTrade(code).then(res => {
         this.data = getStockTradeDetail(res).toString();
         var idxOfStocks = this.stocks.indexOfAtt(code, 'code');
-        var stocks = this.stocks
-        if(idxOfStocks>=0) {
-          stocks[idxOfStocks]['lineData'] = getStockTradeDetail(res).toString()
-          this.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks])
+        var stocks = this.stocks;
+        if (idxOfStocks >= 0) {
+          stocks[idxOfStocks]['lineData'] = getStockTradeDetail(res).toString();
+          stocks[idxOfStocks]['dataIsExist'] = getStockTradeDetail(
+            res
+          ).toString();
+          this.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks]);
         } else {
-          this.stocks.push({code, lineData});
+          console.log(code);
+          this.stocks.push({ code: code, lineData: this.data });
         }
       });
     },
@@ -428,15 +447,26 @@ export default {
 
         if (stockObj) {
           var idxOfStocks = this.stocks.indexOfAtt(code, 'code');
+          //   stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : []
+
           var idxOfLocalStock = this.localStock.indexOfAtt(code, 'code');
-          idxOfStocks >= 0
-            ? this.stocks.splice(idxOfStocks, 1, stockObj)
-            : this.stocks.push(stockObj);
-          idxOfLocalStock < 0 &&
-            this.localStock.push({ code: code, cost: cost, count: count }) &&
-            ((this.formInline.code = ''),
-            (this.formInline.cost = ''),
-            (this.formInline.count = ''));
+
+          // 更新this.stocks
+          if (idxOfStocks >= 0) {
+            // 已存在，不更新lineData
+            stockObj['lineData'] = this.stocks[idxOfStocks]['lineData'] ? this.stocks[idxOfStocks]['lineData']  : []
+            this.stocks.splice(idxOfStocks, 1, stockObj)
+          } else {
+            stockObj['lineData'] = []
+            this.stocks.push(stockObj);
+          }
+          
+          if(idxOfLocalStock < 0) {
+            this.localStock.push({ code: code, cost: cost, count: count }) 
+            (this.formInline.code = '')
+            (this.formInline.cost = '')
+            (this.formInline.count = '')
+          }
         }
       });
     },
@@ -448,7 +478,9 @@ export default {
         stockWidthTemp += getColWidth(val);
       });
       this.stockWidth =
-        stockWidthTemp < MIN_STOCKWIDTH_WITH_SET && this.setModeChecked ? MIN_STOCKWIDTH_WITH_SET : stockWidthTemp;
+        stockWidthTemp < MIN_STOCKWIDTH_WITH_SET && this.setModeChecked
+          ? MIN_STOCKWIDTH_WITH_SET
+          : stockWidthTemp;
     },
     _progressIncrease() {
       this.progress = (this.progress + 1) % 101;
@@ -546,7 +578,7 @@ a.stock-link {
   float: left;
 }
 
-td .cell,th .cell {
+td .cell, th .cell {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
