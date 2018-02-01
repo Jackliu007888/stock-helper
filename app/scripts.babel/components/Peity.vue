@@ -29,15 +29,13 @@ export default {
     }
   },
   mounted () {
-    console.log(this.$el.parentNode)
+    // console.log(this.$el.parentNode)
     this.chart = new Peity(this.$refs.span, this.type, this.data, this.options)
     this.chart.draw()
   },
   watch: {
     data (val) {
-      console.log('a')
       this.$nextTick(() => {
-        console.log('a')
         this.chart.raw = val
         this.chart.draw()
       })
