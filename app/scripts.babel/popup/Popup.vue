@@ -193,6 +193,9 @@
     <div class="progress-wrapper">
       <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
     </div>
+    <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }">
+      <ScrollMsgLine :data="announcements"></ScrollMsgLine>
+    </div>
     <div class="set-mode-checked-wrapper">
       <el-switch
         v-model="setModeChecked"
@@ -203,7 +206,8 @@
 </template>
 <script>
 import Peity from '../components/Peity.vue';
-import { getStockByCode, getStockBySuggest, getStockTrade } from './api/api';
+import ScrollMsgLine from '../components/ScrollMsgLine.vue';
+import { getStockByCode, getStockBySuggest, getStockTrade, getAnnouncement } from './api/api';
 import {
   check,
   getRightShock,
@@ -213,7 +217,8 @@ import {
 import {
   getSuggestList,
   getStockDetail,
-  getStockTradeDetail
+  getStockTradeDetail,
+  getAnnouncementDetail
 } from './api/former';
 export default {
   data() {
@@ -257,6 +262,7 @@ export default {
       colList: [],
       stockWidth: 0,
       progress: 0,
+      announcements: new Array(),
       rules: {
         code: [
           { required: true, message: '请输入股票名称或代码', trigger: 'blur' },
@@ -268,6 +274,7 @@ export default {
   },
   created() {
     this._initGetStock();
+    this._getAnnouncement();
   },
   mounted() {
     setInterval(() => {
@@ -317,6 +324,9 @@ export default {
     },
     localStockLength() {
       return this.localStock.length;
+    },
+    announcementWidth() {
+      return this.stockWidth - 112;
     }
   },
   methods: {
@@ -468,6 +478,12 @@ export default {
         }
       });
     },
+    _getAnnouncement(limit=20) {
+      getAnnouncement(limit).then(res => {
+        this.announcements = getAnnouncementDetail(res);
+        console.log(this.announcements);
+      });
+    },
     _setStockWidth() {
       var stockWidthTemp = this.setModeChecked
         ? getColWidth('init') + getColWidth('set')
@@ -485,7 +501,8 @@ export default {
     }
   },
   components: {
-    Peity
+    Peity,
+    ScrollMsgLine
   }
 };
 </script>
@@ -542,6 +559,10 @@ td .cell {
   width: 5rem;
 }
 
+.el-table th {
+  padding-top: 0px;
+}
+
 a.stock-link {
   font-size: 0.8rem;
   color: black;
@@ -566,13 +587,15 @@ a.stock-link {
 }
 
 .set-mode-checked-wrapper {
-  padding-top: 10px;
+  padding-top: 8px;
   padding-bottom: 10px;
+  padding-left: 5px;
   float: right;
 }
 
 .progress-wrapper {
   padding-top: 10px;
+  padding-right: 5px;
   float: left;
 }
 
@@ -583,5 +606,12 @@ td .cell, th .cell {
 
 .el-checkbox-group .el-checkbox {
   height: 28px;
+}
+
+.announcement-wrapper {
+  display: inline-block;
+  float: left;
+  padding-top: 8px;
+  width: 100px;
 }
 </style>

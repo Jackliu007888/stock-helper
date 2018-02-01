@@ -17,6 +17,7 @@
 * 支持自定义设置 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
 * 支持查看动态更新进度条 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
 * 支持自定义（手动）排序 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
+* 支持滚动新闻列表 ( [![Dr.Chan](https://avatars3.githubusercontent.com/u/10216331?s=20&v=4)](https://github.com/cyn8) [Dr.Chan](https://github.com/cyn8) )
 
 ### 分支:
 

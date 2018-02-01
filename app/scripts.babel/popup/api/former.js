@@ -50,10 +50,13 @@ export function getStockTradeDetail(res) {
   return mapResult
 }
 
-
-
-
-
+export function getAnnouncementDetail(res) {
+  let result = new Array();
+  res['data']['a_stock']['items'].forEach(function(val, idx){
+    result.push({content: val['content_text'], time: val['display_time']});
+  });
+  return result;
+}
 
 export function getStockDetail(res, code, cost, count) {
   var result = res.split('=')[1];
