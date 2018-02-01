@@ -34,12 +34,19 @@ class Peity {
       this.$svg = svgElement('svg', {
         'class': 'peity'
       })
+      // debugger
       this.$el.parentNode.insertBefore(this.$svg, this.$el)
     }
     this.$svg.innerHTML = ''
     this.$svg.setAttribute('width', width)
     this.$svg.setAttribute('height', height)
     return this.$svg
+  }
+
+  destroy () {
+    this.$el = null
+    this.$svg = null
+    this.destroyed = true;
   }
 
   fill () {

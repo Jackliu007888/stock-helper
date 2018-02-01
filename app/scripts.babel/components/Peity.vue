@@ -1,5 +1,5 @@
 <template>
-  <span></span>
+  <div class="peity"><span ref="span"></span></div>
 </template>
 
 <script>
@@ -30,18 +30,21 @@ export default {
   },
   mounted () {
     console.log(this.$el.parentNode)
-    this.$el.parentNode.innerHtml = ""
-    this.chart = new Peity(this.$el, this.type, this.data, this.options)
+    this.chart = new Peity(this.$refs.span, this.type, this.data, this.options)
     this.chart.draw()
   },
   watch: {
     data (val) {
+      console.log('a')
       this.$nextTick(() => {
         console.log('a')
         this.chart.raw = val
         this.chart.draw()
       })
     }
+  },
+  beforeDestroy () {
+    this.chart.destroy()
   }
 }
 </script>

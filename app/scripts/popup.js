@@ -13020,14 +13020,12 @@ exports.default = {
       }
     };
     return {
-      data: [1, 2, 3, 2, 2],
       setPeity: {
         type: 'line',
         options: {
-          // delimiter，fill， height，max，min， stroke，strokeWidth和width。
-          width: 80,
-          height: 20,
-          stroke: '#3ca316'
+          stroke: '#3ca316',
+          width: 60,
+          height: 20
         }
       },
       lodingMsg: 'loading...',
@@ -13063,6 +13061,7 @@ exports.default = {
     setInterval(function () {
       _this2._progressIncrease();
     }, 100);
+    this._getALLStockTrade(this.localStock);
   },
 
   watch: {
@@ -13129,11 +13128,14 @@ exports.default = {
     },
     cellClassName: function cellClassName(rows, columns, rowIndex, columnIndex) {
       if (rows.column.label == '涨跌幅' || rows.column.label == '涨跌额') {
-        return rows.row.rangePrice > 0 ? 'stock-up' : 'stock-down';
+        return rows.row.rangePrice >= 0 ? 'stock-up' : 'stock-down';
       }
     },
     formatter: function formatter(row, column) {
-      return row.range + '%';
+      return row.range.toFixed(2) + '%';
+    },
+    formatterFixedTwo: function formatterFixedTwo(row, column) {
+      return row[column['property']].toFixed(2);
     },
     moveUp: function moveUp(index) {
       this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index - 1].code, 'code'), 0, this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index].code, 'code'), 1)[0]);
@@ -13155,27 +13157,19 @@ exports.default = {
       this.$refs[formName].validate(function (valid) {
         if (valid) {
           _this4._getStockByCode(code, cost, count);
+          _this4._getStockTrade(code);
         } else {
           return;
         }
       });
     },
-    _initGetStock: function _initGetStock() {
-      var conShock = [{ cost: 0, code: 'sz002183', count: '0' }];
-      var colList = ['curPrice', 'range', 'rangePrice', 'profit', 'chart'];
-
-      this.colList = localStorage.colList && JSON.parse(localStorage.colList).length > 0 ? JSON.parse(localStorage.colList) : colList;
-      this.localStock = localStorage.localStock && JSON.parse(localStorage.localStock).length > 0 ? JSON.parse(localStorage.localStock) : conShock;
-      this._getALLStock(this.localStock);
-    },
-    _getALLStock: function _getALLStock(allStock) {
+    _getALLStockTrade: function _getALLStockTrade(allStock) {
       var _this5 = this;
 
       var _loop = function _loop(i) {
         that = _this5;
 
         setTimeout(function () {
-          _this5._getStockByCode(allStock[i].code, allStock[i].cost, allStock[i].count);
           _this5._getStockTrade(allStock[i].code);
         }, 30);
       };
@@ -13186,41 +13180,84 @@ exports.default = {
         _loop(i);
       }
     },
+    _initGetStock: function _initGetStock() {
+      var conShock = [{ cost: 0, code: 'sz002183', count: '0' }];
+      var colList = ['curPrice', 'range', 'rangePrice', 'profit', 'chart'];
+
+      this.colList = localStorage.colList && JSON.parse(localStorage.colList).length > 0 ? JSON.parse(localStorage.colList) : colList;
+      this.localStock = localStorage.localStock && JSON.parse(localStorage.localStock).length > 0 ? JSON.parse(localStorage.localStock) : conShock;
+      this._getALLStock(this.localStock);
+    },
+    _getALLStock: function _getALLStock(allStock) {
+      var _this6 = this;
+
+      var _loop2 = function _loop2(i) {
+        that = _this6;
+
+        setTimeout(function () {
+          _this6._getStockByCode(allStock[i].code, allStock[i].cost, allStock[i].count);
+        }, 30);
+      };
+
+      for (var i = 0; i < allStock.length; i++) {
+        var that;
+
+        _loop2(i);
+      }
+    },
     _getStockTrade: function _getStockTrade(code) {
-      // getStockTrade(code).then(res => {
-      //   this.data = getStockTradeDetail(res).toString();
-      //   var idxOfStocks = this.stocks.indexOfAtt(code, 'code');
-      //   var stocks = this.stocks
-      //   if(idxOfStocks>=0) {
-      //     stocks[idxOfStocks]['lineData'] = getStockTradeDetail(res).toString()
-      //     this.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks])
-      //   } else {
-      //     this.stocks.push({code, lineData});
-      //   }
-      // });
+      var _this7 = this;
+
+      (0, _api.getStockTrade)(code).then(function (res) {
+        _this7.data = (0, _former.getStockTradeDetail)(res).toString();
+        var idxOfStocks = _this7.stocks.indexOfAtt(code, 'code');
+        var stocks = _this7.stocks;
+        if (idxOfStocks >= 0) {
+          stocks[idxOfStocks]['lineData'] = (0, _former.getStockTradeDetail)(res).toString();
+          stocks[idxOfStocks]['dataIsExist'] = (0, _former.getStockTradeDetail)(res).toString();
+          _this7.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks]);
+        } else {
+          console.log(code);
+          _this7.stocks.push({ code: code, lineData: _this7.data });
+        }
+      });
     },
     _getStockByCode: function _getStockByCode(code, cost, count) {
-      var _this6 = this;
+      var _this8 = this;
 
       (0, _api.getStockByCode)(code).then(function (res) {
         var stockObj = (0, _former.getStockDetail)(res, code, cost, count);
 
         if (stockObj) {
-          var idxOfStocks = _this6.stocks.indexOfAtt(code, 'code');
-          var idxOfLocalStock = _this6.localStock.indexOfAtt(code, 'code');
-          idxOfStocks >= 0 ? _this6.stocks.splice(idxOfStocks, 1, stockObj) : _this6.stocks.push(stockObj);
-          idxOfLocalStock < 0 && _this6.localStock.push({ code: code, cost: cost, count: count }) && (_this6.formInline.code = '', _this6.formInline.cost = '', _this6.formInline.count = '');
+          var idxOfStocks = _this8.stocks.indexOfAtt(code, 'code');
+          //   stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : []
+
+          var idxOfLocalStock = _this8.localStock.indexOfAtt(code, 'code');
+
+          // 更新this.stocks
+          if (idxOfStocks >= 0) {
+            // 已存在，不更新lineData
+            stockObj['lineData'] = _this8.stocks[idxOfStocks]['lineData'] ? _this8.stocks[idxOfStocks]['lineData'] : [];
+            _this8.stocks.splice(idxOfStocks, 1, stockObj);
+          } else {
+            stockObj['lineData'] = [];
+            _this8.stocks.push(stockObj);
+          }
+
+          if (idxOfLocalStock < 0) {
+            _this8.localStock.push({ code: code, cost: cost, count: count })(_this8.formInline.code = '')(_this8.formInline.cost = '')(_this8.formInline.count = '');
+          }
         }
       });
     },
     _getAnnouncement: function _getAnnouncement() {
-      var _this7 = this;
+      var _this9 = this;
 
       var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 20;
 
       (0, _api.getAnnouncement)(limit).then(function (res) {
-        _this7.announcements = (0, _former.getAnnouncementDetail)(res);
-        console.log(_this7.announcements);
+        _this9.announcements = (0, _former.getAnnouncementDetail)(res);
+        console.log(_this9.announcements);
       });
     },
     _setStockWidth: function _setStockWidth() {
@@ -13239,6 +13276,11 @@ exports.default = {
     ScrollMsgLine: _ScrollMsgLine2.default
   }
 }; //
+//
+//
+//
+//
+//
 //
 //
 //
@@ -13489,8 +13531,7 @@ exports.default = {
   },
   mounted: function mounted() {
     console.log(this.$el.parentNode);
-    this.$el.parentNode.innerHtml = "";
-    this.chart = new _peity2.default(this.$el, this.type, this.data, this.options);
+    this.chart = new _peity2.default(this.$refs.span, this.type, this.data, this.options);
     this.chart.draw();
   },
 
@@ -13498,12 +13539,16 @@ exports.default = {
     data: function data(val) {
       var _this = this;
 
+      console.log('a');
       this.$nextTick(function () {
         console.log('a');
         _this.chart.raw = val;
         _this.chart.draw();
       });
     }
+  },
+  beforeDestroy: function beforeDestroy() {
+    this.chart.destroy();
   }
 };
 
@@ -13879,7 +13924,7 @@ var colWidth = {
   toPrice: 40,
   highPrice: 40,
   lowPrice: 40,
-  chart: 120,
+  chart: 100,
   set: 115
 };
 var normalCodeArr = function () {
@@ -54556,7 +54601,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__ = __webpack_require__(72);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_261aa4cb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__ = __webpack_require__(203);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1703873e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__ = __webpack_require__(203);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -54578,13 +54623,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Popup_vue___default.a,
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_261aa4cb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1703873e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Popup_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "popup/Popup.vue"
+Component.options.__file = "popup\\Popup.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -54593,9 +54638,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-261aa4cb", Component.options)
+    hotAPI.createRecord("data-v-1703873e", Component.options)
   } else {
-    hotAPI.reload("data-v-261aa4cb", Component.options)
+    hotAPI.reload("data-v-1703873e", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -54616,13 +54661,13 @@ var content = __webpack_require__(170);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(71)("f8419be2", content, false);
+var update = __webpack_require__(71)("a9f5c88a", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-261aa4cb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-261aa4cb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1703873e\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1703873e\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/stylus-loader/index.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Popup.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -54687,7 +54732,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Peity_vue__ = __webpack_require__(73);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Peity_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Peity_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Peity_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Peity_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5e3881ce_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Peity_vue__ = __webpack_require__(177);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4f216441_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Peity_vue__ = __webpack_require__(177);
 var disposed = false
 var normalizeComponent = __webpack_require__(46)
 /* script */
@@ -54705,13 +54750,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Peity_vue___default.a,
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5e3881ce_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Peity_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4f216441_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Peity_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "components/Peity.vue"
+Component.options.__file = "components\\Peity.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -54720,9 +54765,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-5e3881ce", Component.options)
+    hotAPI.createRecord("data-v-4f216441", Component.options)
   } else {
-    hotAPI.reload("data-v-5e3881ce", Component.options)
+    hotAPI.reload("data-v-4f216441", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -54781,12 +54826,20 @@ var Peity = function () {
         this.$svg = _svgElement('svg', {
           'class': 'peity'
         });
+        // debugger
         this.$el.parentNode.insertBefore(this.$svg, this.$el);
       }
       this.$svg.innerHTML = '';
       this.$svg.setAttribute('width', width);
       this.$svg.setAttribute('height', height);
       return this.$svg;
+    }
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      this.$el = null;
+      this.$svg = null;
+      this.destroyed = true;
     }
   }, {
     key: 'fill',
@@ -55105,7 +55158,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("span")
+  return _c("div", { staticClass: "peity" }, [_c("span", { ref: "span" })])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -55114,7 +55167,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-5e3881ce", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-4f216441", esExports)
   }
 }
 
@@ -55127,7 +55180,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ScrollMsgLine_vue__ = __webpack_require__(74);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ScrollMsgLine_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ScrollMsgLine_vue__);
 /* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ScrollMsgLine_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ScrollMsgLine_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5c698386_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ScrollMsgLine_vue__ = __webpack_require__(181);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5f6ffdb0_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ScrollMsgLine_vue__ = __webpack_require__(181);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -55144,18 +55197,18 @@ var __vue_template_functional__ = false
 /* styles */
 var __vue_styles__ = injectStyle
 /* scopeId */
-var __vue_scopeId__ = "data-v-5c698386"
+var __vue_scopeId__ = "data-v-5f6ffdb0"
 /* moduleIdentifier (server only) */
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ScrollMsgLine_vue___default.a,
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5c698386_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ScrollMsgLine_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5f6ffdb0_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ScrollMsgLine_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "components/ScrollMsgLine.vue"
+Component.options.__file = "components\\ScrollMsgLine.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -55164,9 +55217,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-5c698386", Component.options)
+    hotAPI.createRecord("data-v-5f6ffdb0", Component.options)
   } else {
-    hotAPI.reload("data-v-5c698386", Component.options)
+    hotAPI.reload("data-v-5f6ffdb0", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -55187,13 +55240,13 @@ var content = __webpack_require__(180);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(71)("625acb52", content, false);
+var update = __webpack_require__(71)("e0ddb118", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5c698386\",\"scoped\":true,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./ScrollMsgLine.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5c698386\",\"scoped\":true,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./ScrollMsgLine.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5f6ffdb0\",\"scoped\":true,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./ScrollMsgLine.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5f6ffdb0\",\"scoped\":true,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./ScrollMsgLine.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -55211,7 +55264,7 @@ exports = module.exports = __webpack_require__(45)(false);
 
 
 // module
-exports.push([module.i, "\n.seamless-warp[data-v-5c698386] {\r\n  overflow: hidden;\r\n  height: 25px;\n}\n.seamless-warp ul[data-v-5c698386] {\r\n  width: 99999px;\n}\n.seamless-warp ul li[data-v-5c698386] {\r\n  float: left;\r\n  list-style: none;\r\n  margin-right: 10px;\n}\n.seamless-warp ul li span[data-v-5c698386] {\r\n  display: inline-block;\r\n  margin-top: -10px;\n}\n.seamless-warp ul img[data-v-5c698386] {\r\n  height: 18px;\r\n  overflow: hidden;\n}\r\n", ""]);
+exports.push([module.i, "\n.seamless-warp[data-v-5f6ffdb0] {\r\n  overflow: hidden;\r\n  height: 25px;\n}\n.seamless-warp ul[data-v-5f6ffdb0] {\r\n  width: 99999px;\n}\n.seamless-warp ul li[data-v-5f6ffdb0] {\r\n  float: left;\r\n  list-style: none;\r\n  margin-right: 10px;\n}\n.seamless-warp ul li span[data-v-5f6ffdb0] {\r\n  display: inline-block;\r\n  margin-top: -10px;\n}\n.seamless-warp ul img[data-v-5f6ffdb0] {\r\n  height: 18px;\r\n  overflow: hidden;\n}\r\n", ""]);
 
 // exports
 
@@ -55252,7 +55305,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-5c698386", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-5f6ffdb0", esExports)
   }
 }
 
@@ -56305,7 +56358,6 @@ function getStockDetail(res, code, cost, count) {
     count: count,
     profit: profit
   };
-  stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : [];
   return stockObj;
 }
 
@@ -56394,6 +56446,7 @@ var render = function() {
                   attrs: {
                     prop: "curPrice",
                     label: "现价",
+                    formatter: _vm.formatterFixedTwo,
                     width: "50",
                     sortable: !_vm.setModeChecked
                   }
@@ -56418,6 +56471,7 @@ var render = function() {
                     prop: "rangePrice",
                     label: "涨跌额",
                     width: "70",
+                    formatter: _vm.formatterFixedTwo,
                     sortable: !_vm.setModeChecked
                   }
                 })
@@ -56425,19 +56479,34 @@ var render = function() {
             _vm._v(" "),
             _vm.colList.indexOf("toPrice") != -1
               ? _c("el-table-column", {
-                  attrs: { prop: "toPrice", label: "今开", width: "40" }
+                  attrs: {
+                    prop: "toPrice",
+                    label: "今开",
+                    formatter: _vm.formatterFixedTwo,
+                    width: "40"
+                  }
                 })
               : _vm._e(),
             _vm._v(" "),
             _vm.colList.indexOf("highPrice") != -1
               ? _c("el-table-column", {
-                  attrs: { prop: "highPrice", label: "最高", width: "40" }
+                  attrs: {
+                    prop: "highPrice",
+                    label: "最高",
+                    formatter: _vm.formatterFixedTwo,
+                    width: "40"
+                  }
                 })
               : _vm._e(),
             _vm._v(" "),
             _vm.colList.indexOf("lowPrice") != -1
               ? _c("el-table-column", {
-                  attrs: { prop: "lowPrice", label: "最低", width: "40" }
+                  attrs: {
+                    prop: "lowPrice",
+                    label: "最低",
+                    formatter: _vm.formatterFixedTwo,
+                    width: "40"
+                  }
                 })
               : _vm._e(),
             _vm._v(" "),
@@ -56461,6 +56530,30 @@ var render = function() {
             _vm.colList.indexOf("count") != -1
               ? _c("el-table-column", {
                   attrs: { prop: "count", label: "持仓", width: "45" }
+                })
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.colList.indexOf("chart") != -1
+              ? _c("el-table-column", {
+                  attrs: { label: "走势图", width: "100" },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(props) {
+                        return [
+                          props.row.lineData.length
+                            ? _c("peity", {
+                                attrs: {
+                                  type: _vm.setPeity.type,
+                                  options: _vm.setPeity.options,
+                                  data: props.row.lineData
+                                }
+                              })
+                            : _vm._e()
+                        ]
+                      }
+                    }
+                  ])
                 })
               : _vm._e(),
             _vm._v(" "),
@@ -56522,30 +56615,6 @@ var render = function() {
                             },
                             [_vm._v("\n            移除\n          ")]
                           )
-                        ]
-                      }
-                    }
-                  ])
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("chart") != -1
-              ? _c("el-table-column", {
-                  attrs: { fixed: "right", label: "走势图", width: "120" },
-                  scopedSlots: _vm._u([
-                    {
-                      key: "default",
-                      fn: function(props) {
-                        return [
-                          props.row.lineData.length
-                            ? _c("peity", {
-                                attrs: {
-                                  type: _vm.setPeity.type,
-                                  options: _vm.setPeity.options,
-                                  data: props.row.lineData
-                                }
-                              })
-                            : _vm._e()
                         ]
                       }
                     }
@@ -56784,7 +56853,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-261aa4cb", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-1703873e", esExports)
   }
 }
 
