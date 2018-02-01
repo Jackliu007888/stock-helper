@@ -1,6 +1,7 @@
 // 'use strict';
 import Vue from 'vue';
 import ElementUI from 'element-ui';
+import scroll from 'vue-seamless-scroll';
 // import '../../node_modules/element-ui/lib/theme-chalk/inedx.css'
 import 'element-ui/lib/theme-chalk/index.css';
 import Popup from './popup/Popup.vue';
@@ -52,6 +53,7 @@ Array.prototype.max = function () {
 
 
 Vue.use(ElementUI);
+Vue.use(scroll);
 new Vue({
   el: '#app',
   render: c => c(Popup)

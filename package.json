@@ -63,6 +63,7 @@
     "vue": "^2.5.13",
     "vue-loader": "^13.6.2",
     "vue-peity": "^0.5.0",
+    "vue-seamless-scroll": "^1.1.1",
     "vue-template-compiler": "^2.5.13",
     "webpack": "^3.10.0",
     "webpack-stream": "^4.0.0"
