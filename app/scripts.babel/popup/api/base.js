@@ -22,7 +22,7 @@ var colWidth = {
   highPrice: 40,
   lowPrice: 40,
   chart: 100,
-  set: 115
+  set: 145
 };
 var normalCodeArr = (function() {
   var tempArr = [];

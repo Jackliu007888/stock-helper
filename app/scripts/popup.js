@@ -13068,8 +13068,11 @@ exports.default = {
     stocks: function stocks() {
       // console.log('watch stocks', this.stocks);
     },
-    localStock: function localStock() {
-      localStorage.localStock = JSON.stringify(this.localStock);
+    localStock: {
+      handler: function handler() {
+        localStorage.localStock = JSON.stringify(this.localStock);
+      },
+      deep: true
     },
     stockWidth: function stockWidth(val) {
       this.$refs.stock.style.width = val.toString() + 'px';
@@ -13142,6 +13145,27 @@ exports.default = {
     },
     moveDown: function moveDown(index) {
       this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index + 1].code, 'code'), 0, this.localStock.splice(this.localStock.indexOfAtt(this.stocks[index].code, 'code'), 1)[0]);
+    },
+    edit: function edit(index) {
+      var that = this;
+      if (this.stocks[index].edit) {
+        this.$set(this.stocks[index], 'edit', false);
+        this.stocks[index].cost = this.localStock[index].cost;
+        this.stocks[index].count = this.localStock[index].count;
+        this.stocks[index].profit = this.stocks[index].curPrice == 0 ? 0 : this.stocks[index].cost == 0 ? 0 : (0, _base.getFixedNum)((this.stocks[index].curPrice - this.stocks[index].cost) * this.stocks[index].count, 3);
+      } else {
+        this.$set(this.stocks[index], 'edit', true);
+        if (this.colList.indexOf('cost') == -1) this.colList.push('cost');
+        if (this.colList.indexOf('count') == -1) this.colList.push('count');
+        this.stocks.forEach(function (val, idx) {
+          if (index != idx && val.edit == true) {
+            that.$set(that.stocks[idx], 'edit', false);
+            that.stocks[idx].cost = that.localStock[idx].cost;
+            that.stocks[idx].count = that.localStock[idx].count;
+            that.stocks[idx].profit = that.stocks[idx].curPrice == 0 ? 0 : that.stocks[idx].cost == 0 ? 0 : (0, _base.getFixedNum)((that.stocks[idx].curPrice - that.stocks[idx].cost) * that.stocks[idx].count, 3);
+          }
+        });
+      }
     },
     deleteRow: function deleteRow(index, rows) {
       var that = rows;
@@ -13233,7 +13257,10 @@ exports.default = {
           //   stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : []
 
           var idxOfLocalStock = _this8.localStock.indexOfAtt(code, 'code');
-
+          // 编辑状态标记
+          if (idxOfStocks > 0) {
+            stockObj['edit'] = _this8.stocks[idxOfStocks]['edit'] ? _this8.stocks[idxOfStocks]['edit'] : false;
+          }
           // 更新this.stocks
           if (idxOfStocks >= 0) {
             // 已存在，不更新lineData
@@ -13276,6 +13303,22 @@ exports.default = {
     ScrollMsgLine: _ScrollMsgLine2.default
   }
 }; //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -13925,7 +13968,7 @@ var colWidth = {
   highPrice: 40,
   lowPrice: 40,
   chart: 100,
-  set: 115
+  set: 145
 };
 var normalCodeArr = function () {
   var tempArr = [];
@@ -54685,7 +54728,7 @@ exports = module.exports = __webpack_require__(45)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\n.set-mode-checked-wrapper,\n.progress-wrapper {\n  display: inline-block;\n}\n.set-mode-checked-wrapper {\n  padding-top: 8px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  float: right;\n}\n.progress-wrapper {\n  padding-top: 10px;\n  padding-right: 5px;\n  float: left;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.announcement-wrapper {\n  display: inline-block;\n  float: left;\n  padding-top: 8px;\n  width: 100px;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\n.set-mode-checked-wrapper,\n.progress-wrapper {\n  display: inline-block;\n}\n.set-mode-checked-wrapper {\n  padding-top: 8px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  float: right;\n}\n.progress-wrapper {\n  padding-top: 10px;\n  padding-right: 5px;\n  float: left;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.announcement-wrapper {\n  display: inline-block;\n  float: left;\n  padding-top: 8px;\n  width: 100px;\n}\n.footer {\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 219px !important;\n}\n.mainWithSetMode {\n  padding-bottom: 210px !important;\n}\n", ""]);
 
 // exports
 
@@ -56393,335 +56436,466 @@ var render = function() {
   return _c("div", { ref: "stock", staticClass: "stock" }, [
     _c(
       "div",
-      { staticClass: "header-line" },
+      { staticClass: "main", class: { mainWithSetMode: _vm.setModeChecked } },
       [
         _c(
-          "el-table",
-          {
-            ref: "stockTable",
-            staticStyle: { width: "100%" },
-            attrs: {
-              align: "center",
-              "header-align": "center",
-              size: "mini",
-              data: _vm.sortStocks,
-              "cell-class-name": _vm.cellClassName
-            }
-          },
+          "div",
+          { staticClass: "header-line" },
           [
-            _c("el-table-column", {
-              attrs: { label: "股票" },
-              scopedSlots: _vm._u([
-                {
-                  key: "default",
-                  fn: function(scope) {
-                    return [
-                      _c(
-                        "a",
-                        {
-                          staticClass: "stock-link",
-                          attrs: {
-                            href:
-                              "http://stockpage.10jqka.com.cn/" +
-                              scope.row.code.slice(2) +
-                              "/",
-                            target: "_blank"
-                          }
-                        },
-                        [
-                          _vm._v(_vm._s(scope.row.name)),
-                          _c("span", { staticClass: "stock-code" }, [
-                            _vm._v(_vm._s(scope.row.code))
-                          ])
-                        ]
-                      )
-                    ]
-                  }
+            _c(
+              "el-table",
+              {
+                ref: "stockTable",
+                staticStyle: { width: "100%" },
+                attrs: {
+                  align: "center",
+                  "header-align": "center",
+                  size: "mini",
+                  data: _vm.sortStocks,
+                  "cell-class-name": _vm.cellClassName
                 }
-              ])
-            }),
-            _vm._v(" "),
-            _vm.colList.indexOf("curPrice") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    prop: "curPrice",
-                    label: "现价",
-                    formatter: _vm.formatterFixedTwo,
-                    width: "50",
-                    sortable: !_vm.setModeChecked
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("range") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    label: "涨跌幅",
-                    prop: "range",
-                    width: "70",
-                    formatter: _vm.formatter,
-                    sortable: !_vm.setModeChecked
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("rangePrice") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    prop: "rangePrice",
-                    label: "涨跌额",
-                    width: "70",
-                    formatter: _vm.formatterFixedTwo,
-                    sortable: !_vm.setModeChecked
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("toPrice") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    prop: "toPrice",
-                    label: "今开",
-                    formatter: _vm.formatterFixedTwo,
-                    width: "40"
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("highPrice") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    prop: "highPrice",
-                    label: "最高",
-                    formatter: _vm.formatterFixedTwo,
-                    width: "40"
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("lowPrice") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    prop: "lowPrice",
-                    label: "最低",
-                    formatter: _vm.formatterFixedTwo,
-                    width: "40"
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("profit") != -1
-              ? _c("el-table-column", {
-                  attrs: {
-                    prop: "profit",
-                    label: "盈亏",
-                    width: "50",
-                    sortable: !_vm.setModeChecked
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("cost") != -1
-              ? _c("el-table-column", {
-                  attrs: { prop: "cost", label: "成本", width: "45" }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("count") != -1
-              ? _c("el-table-column", {
-                  attrs: { prop: "count", label: "持仓", width: "45" }
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.colList.indexOf("chart") != -1
-              ? _c("el-table-column", {
-                  attrs: { label: "走势图", width: "100" },
-                  scopedSlots: _vm._u([
-                    {
-                      key: "default",
-                      fn: function(props) {
-                        return [
-                          props.row.lineData.length
-                            ? _c("peity", {
-                                attrs: {
-                                  type: _vm.setPeity.type,
-                                  options: _vm.setPeity.options,
-                                  data: props.row.lineData
-                                }
-                              })
-                            : _vm._e()
-                        ]
-                      }
-                    }
-                  ])
-                })
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.setModeChecked
-              ? _c("el-table-column", {
-                  attrs: { label: "操作", width: "115" },
+              },
+              [
+                _c("el-table-column", {
+                  attrs: { label: "股票" },
                   scopedSlots: _vm._u([
                     {
                       key: "default",
                       fn: function(scope) {
                         return [
                           _c(
-                            "el-button",
+                            "a",
                             {
+                              staticClass: "stock-link",
                               attrs: {
-                                disabled: scope.$index == 0,
-                                type: "text",
-                                size: "mini"
-                              },
-                              nativeOn: {
-                                click: function($event) {
-                                  $event.preventDefault()
-                                  _vm.moveUp(scope.$index)
-                                }
+                                href:
+                                  "http://stockpage.10jqka.com.cn/" +
+                                  scope.row.code.slice(2) +
+                                  "/",
+                                target: "_blank"
                               }
                             },
-                            [_vm._v("\n            上移\n          ")]
-                          ),
-                          _vm._v(" "),
-                          _c(
-                            "el-button",
-                            {
-                              attrs: {
-                                disabled:
-                                  scope.$index + 1 == _vm.localStockLength,
-                                type: "text",
-                                size: "mini"
-                              },
-                              nativeOn: {
-                                click: function($event) {
-                                  $event.preventDefault()
-                                  _vm.moveDown(scope.$index)
-                                }
-                              }
-                            },
-                            [_vm._v("\n            下移\n          ")]
-                          ),
-                          _vm._v(" "),
-                          _c(
-                            "el-button",
-                            {
-                              attrs: { type: "text", size: "mini" },
-                              nativeOn: {
-                                click: function($event) {
-                                  $event.preventDefault()
-                                  _vm.deleteRow(scope.$index, scope.row)
-                                }
-                              }
-                            },
-                            [_vm._v("\n            移除\n          ")]
+                            [
+                              _vm._v(_vm._s(scope.row.name)),
+                              _c("span", { staticClass: "stock-code" }, [
+                                _vm._v(_vm._s(scope.row.code))
+                              ])
+                            ]
                           )
                         ]
                       }
                     }
                   ])
-                })
-              : _vm._e()
+                }),
+                _vm._v(" "),
+                _vm.colList.indexOf("curPrice") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        prop: "curPrice",
+                        label: "现价",
+                        formatter: _vm.formatterFixedTwo,
+                        width: "50",
+                        sortable: !_vm.setModeChecked
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("range") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        label: "涨跌幅",
+                        prop: "range",
+                        width: "70",
+                        formatter: _vm.formatter,
+                        sortable: !_vm.setModeChecked
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("rangePrice") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        prop: "rangePrice",
+                        label: "涨跌额",
+                        width: "70",
+                        formatter: _vm.formatterFixedTwo,
+                        sortable: !_vm.setModeChecked
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("toPrice") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        prop: "toPrice",
+                        label: "今开",
+                        formatter: _vm.formatterFixedTwo,
+                        width: "40"
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("highPrice") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        prop: "highPrice",
+                        label: "最高",
+                        formatter: _vm.formatterFixedTwo,
+                        width: "40"
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("lowPrice") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        prop: "lowPrice",
+                        label: "最低",
+                        formatter: _vm.formatterFixedTwo,
+                        width: "40"
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("profit") != -1
+                  ? _c("el-table-column", {
+                      attrs: {
+                        prop: "profit",
+                        label: "盈亏",
+                        width: "50",
+                        sortable: !_vm.setModeChecked
+                      }
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("cost") != -1
+                  ? _c("el-table-column", {
+                      attrs: { label: "成本", width: "45" },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(scope) {
+                            return [
+                              _c("el-input", {
+                                directives: [
+                                  {
+                                    name: "show",
+                                    rawName: "v-show",
+                                    value: scope.row.edit,
+                                    expression: "scope.row.edit"
+                                  }
+                                ],
+                                attrs: { size: "mini" },
+                                model: {
+                                  value: _vm.localStock[scope.$index].cost,
+                                  callback: function($$v) {
+                                    _vm.$set(
+                                      _vm.localStock[scope.$index],
+                                      "cost",
+                                      $$v
+                                    )
+                                  },
+                                  expression: "localStock[scope.$index].cost"
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  directives: [
+                                    {
+                                      name: "show",
+                                      rawName: "v-show",
+                                      value: !scope.row.edit,
+                                      expression: "!scope.row.edit"
+                                    }
+                                  ]
+                                },
+                                [_vm._v(_vm._s(scope.row.cost))]
+                              )
+                            ]
+                          }
+                        }
+                      ])
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("count") != -1
+                  ? _c("el-table-column", {
+                      attrs: { label: "持仓", width: "45" },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(scope) {
+                            return [
+                              _c("el-input", {
+                                directives: [
+                                  {
+                                    name: "show",
+                                    rawName: "v-show",
+                                    value: scope.row.edit,
+                                    expression: "scope.row.edit"
+                                  }
+                                ],
+                                attrs: { size: "mini" },
+                                model: {
+                                  value: _vm.localStock[scope.$index].count,
+                                  callback: function($$v) {
+                                    _vm.$set(
+                                      _vm.localStock[scope.$index],
+                                      "count",
+                                      $$v
+                                    )
+                                  },
+                                  expression: "localStock[scope.$index].count"
+                                }
+                              }),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  directives: [
+                                    {
+                                      name: "show",
+                                      rawName: "v-show",
+                                      value: !scope.row.edit,
+                                      expression: "!scope.row.edit"
+                                    }
+                                  ]
+                                },
+                                [_vm._v(_vm._s(scope.row.count))]
+                              )
+                            ]
+                          }
+                        }
+                      ])
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.colList.indexOf("chart") != -1
+                  ? _c("el-table-column", {
+                      attrs: { label: "走势图", width: "100" },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(props) {
+                            return [
+                              props.row.lineData.length
+                                ? _c("peity", {
+                                    attrs: {
+                                      type: _vm.setPeity.type,
+                                      options: _vm.setPeity.options,
+                                      data: props.row.lineData
+                                    }
+                                  })
+                                : _vm._e()
+                            ]
+                          }
+                        }
+                      ])
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.setModeChecked
+                  ? _c("el-table-column", {
+                      attrs: { label: "操作", width: "145" },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(scope) {
+                            return [
+                              _c(
+                                "el-button",
+                                {
+                                  attrs: {
+                                    disabled: scope.$index == 0,
+                                    type: "text",
+                                    size: "mini"
+                                  },
+                                  nativeOn: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      _vm.moveUp(scope.$index)
+                                    }
+                                  }
+                                },
+                                [_vm._v("\n              上移\n            ")]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "el-button",
+                                {
+                                  attrs: {
+                                    disabled:
+                                      scope.$index + 1 == _vm.localStockLength,
+                                    type: "text",
+                                    size: "mini"
+                                  },
+                                  nativeOn: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      _vm.moveDown(scope.$index)
+                                    }
+                                  }
+                                },
+                                [_vm._v("\n              下移\n            ")]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "el-button",
+                                {
+                                  attrs: { type: "text", size: "mini" },
+                                  nativeOn: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      _vm.edit(scope.$index)
+                                    }
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n              " +
+                                      _vm._s(scope.row.edit ? "完成" : "编辑") +
+                                      "\n            "
+                                  )
+                                ]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "el-button",
+                                {
+                                  attrs: { type: "text", size: "mini" },
+                                  nativeOn: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      _vm.deleteRow(scope.$index, scope.row)
+                                    }
+                                  }
+                                },
+                                [_vm._v("\n              移除\n            ")]
+                              )
+                            ]
+                          }
+                        }
+                      ])
+                    })
+                  : _vm._e()
+              ],
+              1
+            )
           ],
           1
         )
-      ],
-      1
+      ]
     ),
     _vm._v(" "),
-    _vm.setModeChecked
-      ? _c(
-          "div",
-          { staticClass: "input" },
-          [
-            _c(
-              "el-form",
-              {
-                ref: "formInline",
-                staticClass: "demo-form-inline",
-                attrs: {
-                  inline: true,
-                  model: _vm.formInline,
-                  size: "mini",
-                  rules: _vm.rules
-                }
-              },
+    _c(
+      "div",
+      {
+        staticClass: "footer",
+        class: { footerWithSetMode: _vm.setModeChecked }
+      },
+      [
+        _vm.setModeChecked
+          ? _c(
+              "div",
+              { staticClass: "input" },
               [
                 _c(
-                  "el-form-item",
-                  { attrs: { label: "股票代码", prop: "code" } },
-                  [
-                    _c("el-autocomplete", {
-                      attrs: {
-                        "fetch-suggestions": _vm.querySearch,
-                        "trigger-on-focus": false,
-                        placeholder: "请输入股票代码或股票名",
-                        clearable: ""
-                      },
-                      on: { select: _vm.handleSelect },
-                      model: {
-                        value: _vm.formInline.code,
-                        callback: function($$v) {
-                          _vm.$set(_vm.formInline, "code", $$v)
-                        },
-                        expression: "formInline.code"
-                      }
-                    })
-                  ],
-                  1
-                ),
-                _vm._v(" "),
-                _c(
-                  "el-form-item",
-                  { attrs: { label: "成本价" } },
-                  [
-                    _c("el-input", {
-                      attrs: { placeholder: "请输入持仓成本", clearable: "" },
-                      model: {
-                        value: _vm.formInline.cost,
-                        callback: function($$v) {
-                          _vm.$set(_vm.formInline, "cost", $$v)
-                        },
-                        expression: "formInline.cost"
-                      }
-                    })
-                  ],
-                  1
-                ),
-                _vm._v(" "),
-                _c("br"),
-                _vm._v(" "),
-                _c(
-                  "el-form-item",
-                  { attrs: { label: "持股量" } },
-                  [
-                    _c("el-input", {
-                      attrs: { placeholder: "请输入持股量", clearable: "" },
-                      model: {
-                        value: _vm.formInline.count,
-                        callback: function($$v) {
-                          _vm.$set(_vm.formInline, "count", $$v)
-                        },
-                        expression: "formInline.count"
-                      }
-                    })
-                  ],
-                  1
-                ),
-                _vm._v(" "),
-                _c(
-                  "el-form-item",
+                  "el-form",
+                  {
+                    ref: "formInline",
+                    staticClass: "demo-form-inline",
+                    attrs: {
+                      inline: true,
+                      model: _vm.formInline,
+                      size: "mini",
+                      rules: _vm.rules
+                    }
+                  },
                   [
                     _c(
-                      "el-button",
-                      {
-                        attrs: { type: "primary" },
-                        on: {
-                          click: function($event) {
-                            _vm.addStock("formInline")
+                      "el-form-item",
+                      { attrs: { label: "股票代码", prop: "code" } },
+                      [
+                        _c("el-autocomplete", {
+                          attrs: {
+                            "fetch-suggestions": _vm.querySearch,
+                            "trigger-on-focus": false,
+                            placeholder: "请输入股票代码或股票名",
+                            clearable: ""
+                          },
+                          on: { select: _vm.handleSelect },
+                          model: {
+                            value: _vm.formInline.code,
+                            callback: function($$v) {
+                              _vm.$set(_vm.formInline, "code", $$v)
+                            },
+                            expression: "formInline.code"
                           }
-                        }
-                      },
-                      [_vm._v("添加")]
+                        })
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "el-form-item",
+                      { attrs: { label: "成本价" } },
+                      [
+                        _c("el-input", {
+                          attrs: {
+                            placeholder: "请输入持仓成本",
+                            clearable: ""
+                          },
+                          model: {
+                            value: _vm.formInline.cost,
+                            callback: function($$v) {
+                              _vm.$set(_vm.formInline, "cost", $$v)
+                            },
+                            expression: "formInline.cost"
+                          }
+                        })
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c("br"),
+                    _vm._v(" "),
+                    _c(
+                      "el-form-item",
+                      { attrs: { label: "持股量" } },
+                      [
+                        _c("el-input", {
+                          attrs: { placeholder: "请输入持股量", clearable: "" },
+                          model: {
+                            value: _vm.formInline.count,
+                            callback: function($$v) {
+                              _vm.$set(_vm.formInline, "count", $$v)
+                            },
+                            expression: "formInline.count"
+                          }
+                        })
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "el-form-item",
+                      [
+                        _c(
+                          "el-button",
+                          {
+                            attrs: { type: "primary" },
+                            on: {
+                              click: function($event) {
+                                _vm.addStock("formInline")
+                              }
+                            }
+                          },
+                          [_vm._v("添加")]
+                        )
+                      ],
+                      1
                     )
                   ],
                   1
@@ -56729,120 +56903,119 @@ var render = function() {
               ],
               1
             )
+          : _vm._e(),
+        _vm._v(" "),
+        _vm.setModeChecked
+          ? _c(
+              "div",
+              [
+                [
+                  _c(
+                    "el-checkbox-group",
+                    {
+                      attrs: { min: 1 },
+                      model: {
+                        value: _vm.colList,
+                        callback: function($$v) {
+                          _vm.colList = $$v
+                        },
+                        expression: "colList"
+                      }
+                    },
+                    [
+                      _c("el-checkbox", { attrs: { label: "curPrice" } }, [
+                        _vm._v("最新价")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "range" } }, [
+                        _vm._v("涨跌幅")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "rangePrice" } }, [
+                        _vm._v("涨跌额")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "profit" } }, [
+                        _vm._v("盈亏")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "toPrice" } }, [
+                        _vm._v("今开")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "highPrice" } }, [
+                        _vm._v("最高")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "lowPrice" } }, [
+                        _vm._v("最低")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "cost" } }, [
+                        _vm._v("成本")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "count" } }, [
+                        _vm._v("持仓")
+                      ]),
+                      _vm._v(" "),
+                      _c("el-checkbox", { attrs: { label: "chart" } }, [
+                        _vm._v("走势图")
+                      ])
+                    ],
+                    1
+                  )
+                ]
+              ],
+              2
+            )
+          : _vm._e(),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "progress-wrapper" },
+          [
+            _c("el-progress", {
+              attrs: {
+                type: "circle",
+                "stroke-width": 3,
+                width: 20,
+                percentage: _vm.progress,
+                "show-text": false
+              }
+            })
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            staticClass: "announcement-wrapper",
+            style: { width: _vm.announcementWidth + "px" }
+          },
+          [_c("ScrollMsgLine", { attrs: { data: _vm.announcements } })],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "set-mode-checked-wrapper" },
+          [
+            _c("el-switch", {
+              attrs: { "active-text": "设置" },
+              model: {
+                value: _vm.setModeChecked,
+                callback: function($$v) {
+                  _vm.setModeChecked = $$v
+                },
+                expression: "setModeChecked"
+              }
+            })
           ],
           1
         )
-      : _vm._e(),
-    _vm._v(" "),
-    _vm.setModeChecked
-      ? _c(
-          "div",
-          [
-            [
-              _c(
-                "el-checkbox-group",
-                {
-                  attrs: { min: 1 },
-                  model: {
-                    value: _vm.colList,
-                    callback: function($$v) {
-                      _vm.colList = $$v
-                    },
-                    expression: "colList"
-                  }
-                },
-                [
-                  _c("el-checkbox", { attrs: { label: "curPrice" } }, [
-                    _vm._v("最新价")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "range" } }, [
-                    _vm._v("涨跌幅")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "rangePrice" } }, [
-                    _vm._v("涨跌额")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "profit" } }, [
-                    _vm._v("盈亏")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "toPrice" } }, [
-                    _vm._v("今开")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "highPrice" } }, [
-                    _vm._v("最高")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "lowPrice" } }, [
-                    _vm._v("最低")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "cost" } }, [
-                    _vm._v("成本")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "count" } }, [
-                    _vm._v("持仓")
-                  ]),
-                  _vm._v(" "),
-                  _c("el-checkbox", { attrs: { label: "chart" } }, [
-                    _vm._v("走势图")
-                  ])
-                ],
-                1
-              )
-            ]
-          ],
-          2
-        )
-      : _vm._e(),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "progress-wrapper" },
-      [
-        _c("el-progress", {
-          attrs: {
-            type: "circle",
-            "stroke-width": 3,
-            width: 20,
-            percentage: _vm.progress,
-            "show-text": false
-          }
-        })
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c(
-      "div",
-      {
-        staticClass: "announcement-wrapper",
-        style: { width: _vm.announcementWidth + "px" }
-      },
-      [_c("ScrollMsgLine", { attrs: { data: _vm.announcements } })],
-      1
-    ),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "set-mode-checked-wrapper" },
-      [
-        _c("el-switch", {
-          attrs: { "active-text": "设置" },
-          model: {
-            value: _vm.setModeChecked,
-            callback: function($$v) {
-              _vm.setModeChecked = $$v
-            },
-            expression: "setModeChecked"
-          }
-        })
-      ],
-      1
+      ]
     )
   ])
 }
