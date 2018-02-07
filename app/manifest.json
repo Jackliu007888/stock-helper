@@ -1,7 +1,8 @@
 {
   "name": "__MSG_appName__",
-  "version": "0.0.1",
+  "version": "1.2.0",
   "manifest_version": 2,
+  "update_url": "http://www.example.com/update.xml",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "description": "__MSG_appDescription__",
   "icons": {

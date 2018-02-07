@@ -13,10 +13,18 @@ export function getStockTradeDetail(res) {
     console.log('error');
     console.log(e.toString());
   }
+
+  console.log(trade_item_list);
+  
+
+  trade_item_list = trade_item_list.filter((item, index) => {
+    return parseInt(item[2]) > 0
+  })
+
   // 筛选100量级数据
   var lenTimes =  trade_item_list.length > 100 ? parseInt(trade_item_list.length / 100) : 1
   trade_item_list = trade_item_list.filter((item, index) => {
-    return index % lenTimes == 1
+    return index % lenTimes == 0
   })
 
   if (trade_item_list.length > 100) {
@@ -35,7 +43,7 @@ export function getStockTradeDetail(res) {
   // 放大趋势
   var minVal = resultList.min()
   var maxVal = resultList.max()
-  var times = parseInt(10 / (maxVal - minVal))
+  var times = (10 / (maxVal - minVal))
   var mapResult = resultList.map((item, index, array) => {
     return (item - minVal) * times
   })

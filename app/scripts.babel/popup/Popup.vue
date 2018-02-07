@@ -305,7 +305,9 @@ export default {
     setInterval(() => {
       this._progressIncrease();
     }, 100);
-    this._getALLStockTrade(this.localStock);
+    setTimeout(() => {
+      this._getALLStockTrade(this.localStock);
+    }, 300)
   },
   watch: {
     stocks: function() {
@@ -354,7 +356,6 @@ export default {
   },
   methods: {
     lineData(index, row) {
-      console.log(this.data.toString());
       return this.data.indexOfAtt('code', row.peity).toString();
     },
     querySearch(queryString, cb) {
@@ -486,14 +487,11 @@ export default {
         var idxOfStocks = this.stocks.indexOfAtt(code, 'code');
         var stocks = this.stocks;
         if (idxOfStocks >= 0) {
-          stocks[idxOfStocks]['lineData'] = getStockTradeDetail(res).toString();
-          stocks[idxOfStocks]['dataIsExist'] = getStockTradeDetail(
-            res
-          ).toString();
+          stocks[idxOfStocks]['lineData'] = this.data.toString();
           this.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks]);
         } else {
           console.log(code);
-          this.stocks.push({ code: code, lineData: this.data });
+          this.stocks.push({ code: code, lineData: this.data.toString()});
         }
       });
     },
