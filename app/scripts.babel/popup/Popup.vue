@@ -278,7 +278,9 @@ export default {
       formInline: {
         code: '',
         cost: '',
-        count: ''
+        count: '',
+        downLimit:'',
+        upLimit:''
       },
       setModeChecked: false,
       colList: [],
@@ -437,9 +439,11 @@ export default {
       let code = this.formInline.code.slice(-8);
       let cost = this.formInline.cost || 0;
       let count = this.formInline.count || 0;
+      let upLimit = this.formInline.upLimit || 0;
+      let downLimit = this.formInline.downLimit || 0;
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this._getStockByCode(code, cost, count);
+          this._getStockByCode(code, cost, count, upLimit, downLimit);
           this._getStockTrade(code);
         } else {
           return;
@@ -455,7 +459,7 @@ export default {
       }
     },
     _initGetStock() {
-      const conShock = [{ cost: 0, code: 'sz002183', count: '0' }];
+      const conShock = [{ cost: 0, code: 'sz002183', count: '0', downLimit: 0, upLimit: 0 }];
       const colList = ['curPrice', 'range', 'rangePrice', 'profit', 'chart'];
 
       this.colList =
@@ -476,7 +480,9 @@ export default {
           this._getStockByCode(
             allStock[i].code,
             allStock[i].cost,
-            allStock[i].count
+            allStock[i].count,
+            allStock[i].upLimit,
+            allStock[i].downLimit
           );
         }, 30);
       }
@@ -495,7 +501,7 @@ export default {
         }
       });
     },
-    _getStockByCode(code, cost, count) {
+    _getStockByCode(code, cost, count, upLimit, downLimit) {
       getStockByCode(code).then(res => {
         var stockObj = getStockDetail(res, code, cost, count);
 
@@ -519,10 +525,10 @@ export default {
           }
           
           if(idxOfLocalStock < 0) {
-            this.localStock.push({ code: code, cost: cost, count: count }) 
-            (this.formInline.code = '')
-            (this.formInline.cost = '')
-            (this.formInline.count = '')
+            this.localStock.push({ code, cost, count, upLimit, downLimit }) 
+            this.formInline.code = ''
+            this.formInline.cost = ''
+            this.formInline.count = ''
           }
         }
       });

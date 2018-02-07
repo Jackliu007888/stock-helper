@@ -17,6 +17,7 @@
     ]
   },
   "permissions": [
+    "notifications",
     "http://hq.sinajs.cn/list=*",
     "http://suggest3.sinajs.cn/suggest/",
     "http://vip.stock.finance.sina.com.cn/quotes_service/view/"
@@ -28,5 +29,9 @@
     },
     "default_title": "__MSG_appName__",
     "default_popup": "popup.html"
-  }
+  },
+  "web_accessible_resources": [
+    "images/stock_down.png",
+    "images/stock_up.png"
+  ]
 }
