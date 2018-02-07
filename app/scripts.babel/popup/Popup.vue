@@ -1,217 +1,239 @@
 <template>
   <div class="stock" ref="stock">
-    <!-- <h1>{{lodingMsg}}</h1> -->
-    <div class="header-line">
-      <el-table
-        align="center"
-        header-align="center"
-        size="mini"
-        :data="sortStocks"
-        style="width: 100%"
-        :cell-class-name = 'cellClassName'
-        ref="stockTable"
-        >
-        <el-table-column
-          label="股票">
-          <template slot-scope="scope">
-            <a class="stock-link" :href="`http://stockpage.10jqka.com.cn/${scope.row.code.slice(2)}/`" target="_blank">{{scope.row.name}}<span class='stock-code'>{{scope.row.code}}</span></a>
-          </template>
-        </el-table-column>
+    <div class="main" :class="{ mainWithSetMode: setModeChecked }">
+      <!-- <h1>{{lodingMsg}}</h1> -->
+      <div class="header-line">
+        <el-table
+          align="center"
+          header-align="center"
+          size="mini"
+          :data="sortStocks"
+          style="width: 100%"
+          :cell-class-name = 'cellClassName'
+          ref="stockTable"
+          >
+          <el-table-column
+            label="股票">
+            <template slot-scope="scope">
+              <a class="stock-link" :href="`http://stockpage.10jqka.com.cn/${scope.row.code.slice(2)}/`" target="_blank">{{scope.row.name}}<span class='stock-code'>{{scope.row.code}}</span></a>
+            </template>
+          </el-table-column>
 
-        <!-- <el-table-column
-          prop="code"
-          label="代码">
-        </el-table-column> -->
+          <!-- <el-table-column
+            prop="code"
+            label="代码">
+          </el-table-column> -->
 
-        <el-table-column
-          v-if="colList.indexOf('curPrice') != -1"
-          prop="curPrice"
-          label="现价"
-          :formatter="formatterFixedTwo"
-          width="50"
-          :sortable="!setModeChecked">
-        </el-table-column>
+          <el-table-column
+            v-if="colList.indexOf('curPrice') != -1"
+            prop="curPrice"
+            label="现价"
+            :formatter="formatterFixedTwo"
+            width="50"
+            :sortable="!setModeChecked">
+          </el-table-column>
+            
+          <el-table-column
+            v-if="colList.indexOf('range') != -1"
+            label="涨跌幅"
+            prop="range"
+            width="70"
+            :formatter="formatter"
+            :sortable="!setModeChecked">
+          </el-table-column>        
           
-        <el-table-column
-          v-if="colList.indexOf('range') != -1"
-          label="涨跌幅"
-          prop="range"
-          width="70"
-          :formatter="formatter"
-          :sortable="!setModeChecked">
-        </el-table-column>        
+          <el-table-column
+            v-if="colList.indexOf('rangePrice') != -1"
+            prop="rangePrice"
+            label="涨跌额"
+            width="70"
+            :formatter="formatterFixedTwo"      
+            :sortable="!setModeChecked">
+          </el-table-column>
+
+          <el-table-column
+            v-if="colList.indexOf('toPrice') != -1"
+            prop="toPrice"
+            label="今开"
+            :formatter="formatterFixedTwo"
+            width="40">
+          </el-table-column>
+
+          <el-table-column
+            v-if="colList.indexOf('highPrice') != -1"
+            prop="highPrice"
+            label="最高"
+            :formatter="formatterFixedTwo"
+            width="40">
+          </el-table-column>
+
+          <el-table-column
+            v-if="colList.indexOf('lowPrice') != -1"
+            prop="lowPrice"
+            label="最低"
+            :formatter="formatterFixedTwo"
+            width="40">
+          </el-table-column>
+
+          <el-table-column
+            v-if="colList.indexOf('profit') != -1"
+            prop="profit"
+            label="盈亏"
+            width="50"
+            :sortable="!setModeChecked">
+          </el-table-column>
+
+          <el-table-column
+            v-if="colList.indexOf('cost') != -1"
+            label="成本"
+            width="45">
+            <template slot-scope="scope">
+              <el-input v-show="scope.row.edit" v-model="localStock[scope.$index].cost" size="mini"></el-input>
+              <span v-show="!scope.row.edit">{{ scope.row.cost }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+            v-if="colList.indexOf('count') != -1"
+            label="持仓"
+            width="45">
+            <template slot-scope="scope">
+              <el-input v-show="scope.row.edit" v-model="localStock[scope.$index].count" size="mini"></el-input>
+              <span v-show="!scope.row.edit">{{ scope.row.count }}</span>
+            </template>
+          </el-table-column>
         
-        <el-table-column
-          v-if="colList.indexOf('rangePrice') != -1"
-          prop="rangePrice"
-          label="涨跌额"
-          width="70"
-          :formatter="formatterFixedTwo"      
-          :sortable="!setModeChecked">
-        </el-table-column>
+          <el-table-column
+            label="走势图"
+            width="100"
+            v-if="colList.indexOf('chart') != -1"
+            >
+            <template slot-scope="props">
+              <peity v-if="props.row.lineData.length" :type="setPeity.type" :options="setPeity.options" :data="props.row.lineData"></peity>
+            </template>
+          </el-table-column>
 
-         <el-table-column
-          v-if="colList.indexOf('toPrice') != -1"
-          prop="toPrice"
-          label="今开"
-          :formatter="formatterFixedTwo"
-          width="40">
-        </el-table-column>
-
-        <el-table-column
-          v-if="colList.indexOf('highPrice') != -1"
-          prop="highPrice"
-          label="最高"
-          :formatter="formatterFixedTwo"
-          width="40">
-        </el-table-column>
-
-        <el-table-column
-          v-if="colList.indexOf('lowPrice') != -1"
-          prop="lowPrice"
-          label="最低"
-          :formatter="formatterFixedTwo"
-          width="40">
-        </el-table-column>
-
-        <el-table-column
-          v-if="colList.indexOf('profit') != -1"
-          prop="profit"
-          label="盈亏"
-          width="50"
-          :sortable="!setModeChecked">
-        </el-table-column>
-
-        <el-table-column
-          v-if="colList.indexOf('cost') != -1"
-          prop="cost"
-          label="成本"
-          width="45">
-        </el-table-column>
-
-        <el-table-column
-          v-if="colList.indexOf('count') != -1"
-          prop="count"
-          label="持仓"
-          width="45">
-        </el-table-column>
-       
-         <el-table-column
-          label="走势图"
-          width="100"
-          v-if="colList.indexOf('chart') != -1"
-          >
-          <template slot-scope="props">
-            <peity v-if="props.row.lineData.length" :type="setPeity.type" :options="setPeity.options" :data="props.row.lineData"></peity>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-          label="操作"
-          width="115"
-          v-if="setModeChecked"
-          >
-          <template slot-scope="scope">
-            <el-button
-              @click.native.prevent="moveUp(scope.$index)"
-              :disabled="scope.$index == 0"
-              type="text"
-              size="mini">
-              上移
-            </el-button>
-            <el-button
-              @click.native.prevent="moveDown(scope.$index)"
-              :disabled="scope.$index+1 == localStockLength"
-              type="text"
-              size="mini">
-              下移
-            </el-button>
-            <el-button
-              @click.native.prevent="deleteRow(scope.$index, scope.row)"
-              type="text"
-              size="mini">
-              移除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          <el-table-column
+            label="操作"
+            width="145"
+            v-if="setModeChecked"
+            >
+            <template slot-scope="scope">
+              <el-button
+                @click.native.prevent="moveUp(scope.$index)"
+                :disabled="scope.$index == 0"
+                type="text"
+                size="mini">
+                上移
+              </el-button>
+              <el-button
+                @click.native.prevent="moveDown(scope.$index)"
+                :disabled="scope.$index+1 == localStockLength"
+                type="text"
+                size="mini">
+                下移
+              </el-button>
+              <el-button
+                @click.native.prevent="edit(scope.$index)"
+                type="text"
+                size="mini">
+                {{ scope.row.edit ? "完成" : "编辑" }}
+              </el-button>
+              <el-button
+                @click.native.prevent="deleteRow(scope.$index, scope.row)"
+                type="text"
+                size="mini">
+                移除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </div>
-    <div class="input" v-if="setModeChecked">
-      <el-form 
-        :inline="true" 
-        ref="formInline" 
-        :model="formInline" 
-        class="demo-form-inline" 
-        size="mini" 
-        :rules="rules">
-        <el-form-item label="股票代码" prop="code">
-          <el-autocomplete
-            v-model="formInline.code" 
-            :fetch-suggestions="querySearch"
-            :trigger-on-focus="false"
-            @select="handleSelect"
-            placeholder="请输入股票代码或股票名"
-            clearable>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item label="成本价">
-          <el-input 
-            v-model="formInline.cost" 
-            placeholder="请输入持仓成本"
-            clearable>
-          </el-input>
-        </el-form-item>
-        <br>
-        <el-form-item label="持股量">
-          <el-input 
-            v-model="formInline.count" 
-            placeholder="请输入持股量"
-            clearable>
-          </el-input>
-        </el-form-item>                
-        <el-form-item>
-          <el-button type="primary" @click="addStock('formInline')">添加</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-    <div v-if="setModeChecked">
-      <template>
-        <el-checkbox-group v-model="colList" :min="1">
-          <el-checkbox label="curPrice">最新价</el-checkbox>
-          <el-checkbox label="range">涨跌幅</el-checkbox>
-          <el-checkbox label="rangePrice">涨跌额</el-checkbox>
-          <el-checkbox label="profit">盈亏</el-checkbox>
-          <el-checkbox label="toPrice">今开</el-checkbox>
-          <el-checkbox label="highPrice">最高</el-checkbox>
-          <el-checkbox label="lowPrice">最低</el-checkbox>
-          <el-checkbox label="cost">成本</el-checkbox>
-          <el-checkbox label="count">持仓</el-checkbox>
-          <el-checkbox label="chart">走势图</el-checkbox>
-        </el-checkbox-group>
-      </template>
-    </div>
-    <div class="progress-wrapper">
-      <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
-    </div>
-    <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }">
-      <ScrollMsgLine :data="announcements"></ScrollMsgLine>
-    </div>
-    <div class="set-mode-checked-wrapper">
-      <el-switch
-        v-model="setModeChecked"
-        active-text="设置">
-      </el-switch>
+    <div class="footer" :class="{ footerWithSetMode: setModeChecked }">
+      <div class="input" v-if="setModeChecked">
+        <el-form 
+          :inline="true" 
+          ref="formInline" 
+          :model="formInline" 
+          class="demo-form-inline" 
+          size="mini" 
+          :rules="rules">
+          <el-form-item label="股票代码" prop="code">
+            <el-autocomplete
+              v-model="formInline.code" 
+              :fetch-suggestions="querySearch"
+              :trigger-on-focus="false"
+              @select="handleSelect"
+              placeholder="请输入股票代码或股票名"
+              clearable>
+            </el-autocomplete>
+          </el-form-item>
+          <el-form-item label="成本价">
+            <el-input 
+              v-model="formInline.cost" 
+              placeholder="请输入持仓成本"
+              clearable>
+            </el-input>
+          </el-form-item>
+          <br>
+          <el-form-item label="持股量">
+            <el-input 
+              v-model="formInline.count" 
+              placeholder="请输入持股量"
+              clearable>
+            </el-input>
+          </el-form-item>                
+          <el-form-item>
+            <el-button type="primary" @click="addStock('formInline')">添加</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div v-if="setModeChecked">
+        <template>
+          <el-checkbox-group v-model="colList" :min="1">
+            <el-checkbox label="curPrice">最新价</el-checkbox>
+            <el-checkbox label="range">涨跌幅</el-checkbox>
+            <el-checkbox label="rangePrice">涨跌额</el-checkbox>
+            <el-checkbox label="profit">盈亏</el-checkbox>
+            <el-checkbox label="toPrice">今开</el-checkbox>
+            <el-checkbox label="highPrice">最高</el-checkbox>
+            <el-checkbox label="lowPrice">最低</el-checkbox>
+            <el-checkbox label="cost">成本</el-checkbox>
+            <el-checkbox label="count">持仓</el-checkbox>
+            <el-checkbox label="chart">走势图</el-checkbox>
+          </el-checkbox-group>
+        </template>
+      </div>
+      <div class="progress-wrapper">
+        <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
+      </div>
+      <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }">
+        <ScrollMsgLine :data="announcements"></ScrollMsgLine>
+      </div>
+      <div class="set-mode-checked-wrapper">
+        <el-switch
+          v-model="setModeChecked"
+          active-text="设置">
+        </el-switch>
+      </div>
     </div>
   </div>    
 </template>
 <script>
 import Peity from '../components/Peity.vue';
 import ScrollMsgLine from '../components/ScrollMsgLine.vue';
-import { getStockByCode, getStockBySuggest, getStockTrade, getAnnouncement } from './api/api';
+import { 
+  getStockByCode, 
+  getStockBySuggest, 
+  getStockTrade, 
+  getAnnouncement 
+} from './api/api';
 import {
   check,
   getRightShock,
   getColWidth,
+  getFixedNum,
   MIN_STOCKWIDTH_WITH_SET
 } from './api/base';
 import {
@@ -291,8 +313,11 @@ export default {
     stocks: function() {
       // console.log('watch stocks', this.stocks);
     },
-    localStock: function() {
-      localStorage.localStock = JSON.stringify(this.localStock);
+    localStock: {
+      handler: function() {
+        localStorage.localStock = JSON.stringify(this.localStock);
+      },
+      deep: true
     },
     stockWidth: function(val) {
       this.$refs.stock.style.width = val.toString() + 'px';
@@ -382,6 +407,27 @@ export default {
         )[0]
       );
     },
+    edit(index) {
+      let that = this;
+      if(this.stocks[index].edit) {
+        this.$set(this.stocks[index], 'edit', false);
+        this.stocks[index].cost = this.localStock[index].cost;
+        this.stocks[index].count = this.localStock[index].count;
+        this.stocks[index].profit = this.stocks[index].curPrice == 0 ? 0 : (this.stocks[index].cost == 0 ? 0 : getFixedNum((this.stocks[index].curPrice - this.stocks[index].cost) * this.stocks[index].count, 3));
+      } else {
+        this.$set(this.stocks[index], 'edit', true);
+        if(this.colList.indexOf('cost') == -1) this.colList.push('cost');
+        if(this.colList.indexOf('count') == -1) this.colList.push('count');
+        this.stocks.forEach(function (val, idx) {
+          if(index != idx && val.edit == true) {
+            that.$set(that.stocks[idx], 'edit', false);
+            that.stocks[idx].cost = that.localStock[idx].cost;
+            that.stocks[idx].count = that.localStock[idx].count;
+            that.stocks[idx].profit = that.stocks[idx].curPrice == 0 ? 0 : (that.stocks[idx].cost == 0 ? 0 : getFixedNum((that.stocks[idx].curPrice - that.stocks[idx].cost) * that.stocks[idx].count, 3));
+          }
+        });
+      }
+    },
     deleteRow(index, rows) {
       var that = rows;
       this.localStock.splice(this.localStock.indexOfAtt(that.code, 'code'), 1);
@@ -458,7 +504,10 @@ export default {
           //   stockObj['lineData'] = stockObj['lineData'] ? stockObj['lineData'] : []
 
           var idxOfLocalStock = this.localStock.indexOfAtt(code, 'code');
-
+          // 编辑状态标记
+          if(idxOfStocks > 0) {
+            stockObj['edit'] = this.stocks[idxOfStocks]['edit'] ? this.stocks[idxOfStocks]['edit'] : false;
+          }
           // 更新this.stocks
           if (idxOfStocks >= 0) {
             // 已存在，不更新lineData
@@ -523,6 +572,11 @@ html {
   height: 100%;
   position: relative;
   // background-color #eee
+}
+
+.stock input {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .input {
@@ -614,4 +668,26 @@ td .cell, th .cell {
   padding-top: 8px;
   width: 100px;
 }
+
+.footer {
+  background: #fff;
+  position: fixed;
+  bottom: 0;
+  height: 39px;
+  z-index: 1;
+}
+
+.main {
+  padding-bottom: 30px;
+  z-index: -1;
+}
+
+.footerWithSetMode {
+  height: 219px !important;
+}
+
+.mainWithSetMode {
+  padding-bottom: 210px !important;
+}
+
 </style>
