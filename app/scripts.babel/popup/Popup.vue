@@ -137,7 +137,7 @@
                 @click.native.prevent="edit(scope.$index)"
                 type="text"
                 size="mini">
-                {{ scope.row.edit ? "完成" : "编辑" }}
+                {{ scope.row.edit ? '完成' : '编辑' }}
               </el-button>
               <el-button
                 @click.native.prevent="deleteRow(scope.$index, scope.row)"
@@ -205,17 +205,19 @@
           </el-checkbox-group>
         </template>
       </div>
-      <div class="progress-wrapper">
-        <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
-      </div>
-      <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }">
-        <ScrollMsgLine :data="announcements"></ScrollMsgLine>
-      </div>
-      <div class="set-mode-checked-wrapper">
-        <el-switch
-          v-model="setModeChecked"
-          active-text="设置">
-        </el-switch>
+      <div class="bottom">
+        <div class="progress-wrapper">
+          <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
+        </div>
+        <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }">
+          <ScrollMsgLine :data="announcements"></ScrollMsgLine>
+        </div>
+        <div class="set-mode-checked-wrapper">
+          <el-switch
+            v-model="setModeChecked"
+            active-text="">
+          </el-switch>
+        </div>
       </div>
     </div>
   </div>    
@@ -351,7 +353,7 @@ export default {
       return this.localStock.length;
     },
     announcementWidth() {
-      return this.stockWidth - 112;
+      return this.stockWidth - 78;
     }
   },
   methods: {
@@ -580,7 +582,7 @@ html {
 }
 
 .input {
-  padding: 1.5rem 0 0;
+  padding: 0.6rem 0 0;
 }
 
 .add-stock input {
@@ -636,23 +638,6 @@ a.stock-link {
   }
 }
 
-.set-mode-checked-wrapper, .progress-wrapper {
-  display: inline-block;
-}
-
-.set-mode-checked-wrapper {
-  padding-top: 8px;
-  padding-bottom: 10px;
-  padding-left: 5px;
-  float: right;
-}
-
-.progress-wrapper {
-  padding-top: 10px;
-  padding-right: 5px;
-  float: left;
-}
-
 td .cell, th .cell {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -662,14 +647,8 @@ td .cell, th .cell {
   height: 28px;
 }
 
-.announcement-wrapper {
-  display: inline-block;
-  float: left;
-  padding-top: 8px;
-  width: 100px;
-}
-
 .footer {
+  width: 100%
   background: #fff;
   position: fixed;
   bottom: 0;
@@ -683,11 +662,41 @@ td .cell, th .cell {
 }
 
 .footerWithSetMode {
-  height: 219px !important;
+  height: 199px !important;
 }
 
 .mainWithSetMode {
-  padding-bottom: 210px !important;
+  padding-bottom: 190px !important;
+}
+
+.bottom {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.announcement-wrapper {
+  padding-top: 6px;
+  width: 50px;
+}
+
+.set-mode-checked-wrapper {
+  flex-shrink: 0;
+  padding-top: 6px;
+  padding-bottom: 10px;
+  padding-left: 5px;
+  padding-right: 10px;
+}
+
+.progress-wrapper {
+  flex-shrink: 0;
+  padding-top: 8px;
+  padding-right: 5px;
+}
+
+body {
+  padding: 0.2rem;
 }
 
 </style>

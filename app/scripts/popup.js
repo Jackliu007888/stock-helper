@@ -13105,7 +13105,7 @@ exports.default = {
       return this.localStock.length;
     },
     announcementWidth: function announcementWidth() {
-      return this.stockWidth - 112;
+      return this.stockWidth - 78;
     }
   },
   methods: {
@@ -13303,6 +13303,8 @@ exports.default = {
     ScrollMsgLine: _ScrollMsgLine2.default
   }
 }; //
+//
+//
 //
 //
 //
@@ -54726,7 +54728,7 @@ exports = module.exports = __webpack_require__(45)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 1.5rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\n.set-mode-checked-wrapper,\n.progress-wrapper {\n  display: inline-block;\n}\n.set-mode-checked-wrapper {\n  padding-top: 8px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  float: right;\n}\n.progress-wrapper {\n  padding-top: 10px;\n  padding-right: 5px;\n  float: left;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.announcement-wrapper {\n  display: inline-block;\n  float: left;\n  padding-top: 8px;\n  width: 100px;\n}\n.footer {\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 219px !important;\n}\n.mainWithSetMode {\n  padding-bottom: 210px !important;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 0.6rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.footer {\n  width: 100%;\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 199px !important;\n}\n.mainWithSetMode {\n  padding-bottom: 190px !important;\n}\n.bottom {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  flex-wrap: nowrap;\n}\n.announcement-wrapper {\n  padding-top: 6px;\n  width: 50px;\n}\n.set-mode-checked-wrapper {\n  flex-shrink: 0;\n  padding-top: 6px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  padding-right: 10px;\n}\n.progress-wrapper {\n  flex-shrink: 0;\n  padding-top: 8px;\n  padding-right: 5px;\n}\nbody {\n  padding: 0.2rem;\n}\n", ""]);
 
 // exports
 
@@ -56976,50 +56978,52 @@ var render = function() {
             )
           : _vm._e(),
         _vm._v(" "),
-        _c(
-          "div",
-          { staticClass: "progress-wrapper" },
-          [
-            _c("el-progress", {
-              attrs: {
-                type: "circle",
-                "stroke-width": 3,
-                width: 20,
-                percentage: _vm.progress,
-                "show-text": false
-              }
-            })
-          ],
-          1
-        ),
-        _vm._v(" "),
-        _c(
-          "div",
-          {
-            staticClass: "announcement-wrapper",
-            style: { width: _vm.announcementWidth + "px" }
-          },
-          [_c("ScrollMsgLine", { attrs: { data: _vm.announcements } })],
-          1
-        ),
-        _vm._v(" "),
-        _c(
-          "div",
-          { staticClass: "set-mode-checked-wrapper" },
-          [
-            _c("el-switch", {
-              attrs: { "active-text": "设置" },
-              model: {
-                value: _vm.setModeChecked,
-                callback: function($$v) {
-                  _vm.setModeChecked = $$v
-                },
-                expression: "setModeChecked"
-              }
-            })
-          ],
-          1
-        )
+        _c("div", { staticClass: "bottom" }, [
+          _c(
+            "div",
+            { staticClass: "progress-wrapper" },
+            [
+              _c("el-progress", {
+                attrs: {
+                  type: "circle",
+                  "stroke-width": 3,
+                  width: 20,
+                  percentage: _vm.progress,
+                  "show-text": false
+                }
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "announcement-wrapper",
+              style: { width: _vm.announcementWidth + "px" }
+            },
+            [_c("ScrollMsgLine", { attrs: { data: _vm.announcements } })],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "set-mode-checked-wrapper" },
+            [
+              _c("el-switch", {
+                attrs: { "active-text": "" },
+                model: {
+                  value: _vm.setModeChecked,
+                  callback: function($$v) {
+                    _vm.setModeChecked = $$v
+                  },
+                  expression: "setModeChecked"
+                }
+              })
+            ],
+            1
+          )
+        ])
       ]
     )
   ])
