@@ -18,6 +18,8 @@ var colWidth = {
   profit: 50,
   cost: 45,
   count: 45,
+  upLimit: 45,
+  downLimit: 45,
   toPrice: 40,
   highPrice: 40,
   lowPrice: 40,
