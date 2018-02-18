@@ -1066,8 +1066,9 @@ function getStockBySuggest(sug) {
 
 // http://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php?num=100&symbol=sz002183&rn=25278288
 var url_get_stock_trade = 'http://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php';
-function getStockTrade(code, num) {
-  var num = num ? num : 20000;
+function getStockTrade(code) {
+  var num = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 20000;
+
   return _axios2.default.get(url_get_stock_trade + '?num=' + num + '&symbol=' + code + '&rn=' + Math.random(4).toString().slice(2, 10)).then(function (res) {
     return Promise.resolve(res.data);
   });
@@ -1997,7 +1998,7 @@ function getStockTradeDetail(res) {
     console.log(e.toString());
   }
 
-  console.log(trade_item_list);
+  // console.log(trade_item_list);
 
   trade_item_list = trade_item_list.filter(function (item, index) {
     return parseInt(item[2]) > 0;
@@ -2009,8 +2010,7 @@ function getStockTradeDetail(res) {
     return index % lenTimes == 0;
   });
 
-  if (trade_item_list.length > 100) {}
-
+  // 反转数组
   var revList = trade_item_list.reverse();
 
   var resultList = [];
@@ -2019,7 +2019,7 @@ function getStockTradeDetail(res) {
     resultList.push(element);
   }
 
-  // 放大趋势
+  // 放大趋势，适应peity
   var minVal = resultList.min();
   var maxVal = resultList.max();
   var times = 10 / (maxVal - minVal);
@@ -2032,12 +2032,18 @@ function getStockTradeDetail(res) {
 function getAnnouncementDetail(res) {
   var result = new Array();
   res['data']['a_stock']['items'].forEach(function (val, idx) {
-    result.push({ content: val['content_text'], time: val['display_time'] });
+    result.push({
+      content: val['content_text'],
+      time: val['display_time']
+    });
   });
   return result;
 }
 
-function getStockDetail(res, code, cost, count) {
+function getStockDetail(res, code) {
+  var cost = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var count = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
   var result = res.split('=')[1];
   if (result.length <= 10) {
     console.log('no result');
@@ -2060,8 +2066,8 @@ function getStockDetail(res, code, cost, count) {
   date = Number(itemArr[8]),
       // 日期
   time = Number(itemArr[9]); // 时间
-  var rangePrice = (0, _base.getFixedNum)(curPrice - yesPrice);
-  var range = (0, _base.getFixedNum)((curPrice - yesPrice) / yesPrice * 100);
+  var rangePrice = curPrice == 0 ? 0 : (0, _base.getFixedNum)(curPrice - yesPrice);
+  var range = curPrice == 0 ? 0 : (0, _base.getFixedNum)((curPrice - yesPrice) / yesPrice * 100);
   cost = (0, _base.getFixedNum)(cost, 3);
   var profit = curPrice == 0 ? 0 : cost == 0 ? 0 : (0, _base.getFixedNum)((curPrice - cost) * count, 3);
 
@@ -2172,7 +2178,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 });
 
 chrome.browserAction.setBadgeText({
-  text: '1'
+  text: '2'
 });
 
 // 检测新消息
@@ -2180,10 +2186,9 @@ function checkMsg() {
   if (isBussiness) {
     // 开市
     setInterval(function () {
-      // var codeList = getCodeList()
       var codeList = localStorage.localStock;
       checkVarify(codeList);
-    }, 50000);
+    }, 1000 * 60 * 10);
   }
 }
 
@@ -2195,38 +2200,30 @@ function isBussiness() {
   return open < curTime && curTime < close;
 }
 
-// function getCodeList() {
-//   var localStock = localStorage.localStock
-//   var tempArr = []
-//   for (let i = 0; i < localStock.length; i++) {
-//     const element = localStock[i];
-//     tempArr.push(element.code)
-//   }
-//   return tempArr
-// }
-
 function checkVarify(codeList) {
   codeList.forEach(function (element) {
-    var code = element.code;
-    var cost = element.cost;
-    var count = element.count;
-    var upLimit = element.upLimit;
-    var downLimit = element.downLimit;
+    var code = element.code,
+        cost = element.cost,
+        count = element.count,
+        upLimit = element.upLimit,
+        downLimit = element.downLimit;
+
     console.log(downLimit);
     console.log(upLimit);
 
     (0, _api.getStockByCode)(code).then(function (res) {
       var stockObj = (0, _former.getStockDetail)(res, code, cost, count, upLimit, downLimit);
       console.log(stockObj);
-      var curPrice = stockObj.curPrice;
-      var name = stockObj.name;
+      var curPrice = stockObj.curPrice,
+          name = stockObj.name;
+
       var isUp = upLimit && curPrice > upLimit;
       var isDown = downLimit && curPrice < downLimit;
       console.log(isUp);
       console.log(isDown);
 
-      isUp && notifyMe(code, '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + downLimit, 'up');
-      isDown && notifyMe(code, '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'down');
+      isUp && notifyMe('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
+      isDown && notifyMe('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
     });
   });
 }
@@ -2242,7 +2239,7 @@ checkVarify(codeList);
 if (Notification.permission == 'granted') {
   Notification.requestPermission();
 }
-function notifyMe(code, msg, type) {
+function notifyMe(title, msgBody, icon, url) {
   if (!Notification) {
     alert('Desktop notifications not available in your browser. Try Chromium.');
     return;
@@ -2251,12 +2248,12 @@ function notifyMe(code, msg, type) {
   if (Notification.permission !== 'granted') {
     Notification.requestPermission();
   } else {
-    var notification = new Notification(type == 'down' ? '股价下跌！请关注！' : '股价上涨！请关注！', {
-      icon: type == 'down' ? 'images/stock_down.png' : 'images/stock_up.png',
-      body: msg
+    var notification = new Notification(title, {
+      icon: icon,
+      body: msgBody
     });
     notification.onclick = function () {
-      window.open('http://quote.eastmoney.com/' + code + '.html');
+      window.open(url);
     };
   }
 }

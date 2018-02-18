@@ -1,8 +1,10 @@
 <template>
   <div class="stock" ref="stock">
     <div class="main" :class="{ mainWithSetMode: setModeChecked }">
-      <!-- <h1>{{lodingMsg}}</h1> -->
-      <div class="header-line">
+      <div class="loading" v-if="!stocks.length">
+        <span>{{lodingMsg}}</span>
+      </div>
+      <div class="header-line" v-if="stocks.length">
         <el-table
           align="center"
           header-align="center"
@@ -15,7 +17,8 @@
           <el-table-column
             label="股票">
             <template slot-scope="scope">
-              <a class="stock-link" :href="`http://stockpage.10jqka.com.cn/${scope.row.code.slice(2)}/`" target="_blank">{{scope.row.name}}<span class='stock-code'>{{scope.row.code}}</span></a>
+              <!-- <a class="stock-link" :href="`http://stockpage.10jqka.com.cn/${scope.row.code.slice(2)}/`" target="_blank">{{scope.row.name}}<span class='stock-code'>{{scope.row.code}}</span></a> -->
+              <a class="stock-link" :href="`http://finance.sina.com.cn/realstock/company/${scope.row.code}/nc.shtml`" target="_blank">{{scope.row.name}}<span class='stock-code'>{{scope.row.code}}</span></a>
             </template>
           </el-table-column>
 
@@ -88,7 +91,7 @@
           </el-table-column>
 
           <el-table-column
-            v-if="colList.indexOf('cost') != -1"
+            v-if="colList.indexOf('cost') != -1 || setModeChecked"
             label="成本"
             width="45">
             <template slot-scope="scope">
@@ -98,7 +101,7 @@
           </el-table-column>
 
           <el-table-column
-            v-if="colList.indexOf('count') != -1"
+            v-if="colList.indexOf('count') != -1 || setModeChecked"
             label="持仓"
             width="45">
             <template slot-scope="scope">
@@ -231,7 +234,8 @@
         <div class="progress-wrapper">
           <el-progress type="circle" :stroke-width="3" :width="20" :percentage="progress" :show-text="false"></el-progress>
         </div>
-        <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }">
+        <!-- "https://wallstreetcn.com/live/a-stock" -->
+        <div class="announcement-wrapper" :style="{ width: announcementWidth + 'px' }" @click="openWallStreetUrl">
           <ScrollMsgLine :data="announcements"></ScrollMsgLine>
         </div>
         <div class="set-mode-checked-wrapper">
@@ -269,7 +273,7 @@ import {
 export default {
   data() {
     var checkStock = (rule, value, callback) => {
-      console.log(this.formInline.code);
+      // console.log(this.formInline.code);
       setTimeout(() => {
         if (!check(this.formInline.code.slice(-6))) {
           callback(new Error('请输入正确的股票代码'));
@@ -323,10 +327,12 @@ export default {
     this._getAnnouncement();
   },
   mounted() {
-    // 获得股票数据
-    setInterval(() => {
-      this._getALLStock(this.localStock);
-    }, 10000);
+    // 获得股票数据, 打开设置的时候不更新
+    if (this.setModeChecked) {
+      setInterval(() => {
+        this._getALLStock(this.localStock);
+      }, 10000);
+    }
     // 进度条
     setInterval(() => {
       this._progressIncrease();
@@ -364,7 +370,7 @@ export default {
           let tempStock = item;
           tempStock.setModeChecked = this.setModeChecked;
           this.stocks.splice(index, 1, tempStock);
-          console.log(item);
+          // console.log(item);
         });
       });
 
@@ -392,6 +398,9 @@ export default {
     }
   },
   methods: {
+    openWallStreetUrl() {
+      window.open('https://wallstreetcn.com/live/a-stock');
+    },
     lineData(index, row) {
       return this.data.indexOfAtt('code', row.peity).toString();
     },
@@ -462,7 +471,8 @@ export default {
               );
       } else {
         this.$set(curStock, 'edit', true);
-        if (this.colList.indexOf('downLimit') == -1) this.colList.push('downLimit');
+        if (this.colList.indexOf('downLimit') == -1)
+          this.colList.push('downLimit');
         if (this.colList.indexOf('cost') == -1) this.colList.push('cost');
         if (this.colList.indexOf('count') == -1) this.colList.push('count');
         this.stocks.forEach((val, idx) => {
@@ -470,7 +480,7 @@ export default {
             this.$set(this.stocks[idx], 'edit', false);
             this.stocks[idx].cost = this.localStock[idx].cost;
             this.stocks[idx].count = this.localStock[idx].count;
-            this.stocks[idx].upLimit = this.localStock[idx].upLimit;  
+            this.stocks[idx].upLimit = this.localStock[idx].upLimit;
             this.stocks[idx].downLimit = this.localStock[idx].downLimit;
             this.stocks[idx].profit =
               this.stocks[idx].curPrice == 0 || this.stocks[idx].cost == 0
@@ -492,6 +502,8 @@ export default {
     addStock(formName) {
       let code = this.formInline.code.slice(-8);
       let { cost, count, upLimit, downLimit } = this.formInline;
+      cost = cost ? cost : 0
+      count = count ? count : 0
       this.$refs[formName].validate(valid => {
         if (valid) {
           this._getStockByCode(code, cost, count, upLimit, downLimit);
@@ -548,7 +560,7 @@ export default {
     _getStockByCode(
       code = 'sz002183',
       cost = 0,
-      count = 0,
+      count = '0',
       upLimit = 0,
       downLimit = 0
     ) {
@@ -607,6 +619,7 @@ export default {
         stockWidthTemp < MIN_STOCKWIDTH_WITH_SET && this.setModeChecked
           ? MIN_STOCKWIDTH_WITH_SET
           : stockWidthTemp;
+      // 如果打开设置， 宽度为固定宽度；股票、现价、涨跌幅、涨跌额、上限、下限、成本、持仓、操作
       if (this.setModeChecked) {
         this.stockWidth =
           baseWidth +
@@ -734,11 +747,11 @@ td .cell, th .cell {
 }
 
 .footerWithSetMode {
-  height: 199px !important;
+  height: 170px !important;
 }
 
 .mainWithSetMode {
-  padding-bottom: 190px !important;
+  padding-bottom: 170px !important;
 }
 
 .bottom {
@@ -751,6 +764,10 @@ td .cell, th .cell {
 .announcement-wrapper {
   padding-top: 6px;
   width: 50px;
+}
+
+.announcement-wrapper:hover {
+  cursor: pointer;
 }
 
 .set-mode-checked-wrapper {
@@ -769,5 +786,10 @@ td .cell, th .cell {
 
 body {
   padding: 0.2rem;
+}
+
+.loading {
+  height: 2rem;
+
 }
 </style>

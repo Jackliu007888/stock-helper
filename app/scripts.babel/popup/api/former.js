@@ -14,24 +14,19 @@ export function getStockTradeDetail(res) {
     console.log(e.toString());
   }
 
-  console.log(trade_item_list);
-  
+  // console.log(trade_item_list);
 
   trade_item_list = trade_item_list.filter((item, index) => {
     return parseInt(item[2]) > 0
   })
 
   // 筛选100量级数据
-  var lenTimes =  trade_item_list.length > 100 ? parseInt(trade_item_list.length / 100) : 1
+  var lenTimes = trade_item_list.length > 100 ? parseInt(trade_item_list.length / 100) : 1
   trade_item_list = trade_item_list.filter((item, index) => {
     return index % lenTimes == 0
   })
 
-  if (trade_item_list.length > 100) {
-
-  }
-
-
+  // 反转数组
   var revList = trade_item_list.reverse();
 
   var resultList = []
@@ -40,7 +35,7 @@ export function getStockTradeDetail(res) {
     resultList.push(element)
   }
 
-  // 放大趋势
+  // 放大趋势，适应peity
   var minVal = resultList.min()
   var maxVal = resultList.max()
   var times = (10 / (maxVal - minVal))
@@ -52,13 +47,16 @@ export function getStockTradeDetail(res) {
 
 export function getAnnouncementDetail(res) {
   let result = new Array();
-  res['data']['a_stock']['items'].forEach(function(val, idx){
-    result.push({content: val['content_text'], time: val['display_time']});
+  res['data']['a_stock']['items'].forEach(function (val, idx) {
+    result.push({
+      content: val['content_text'],
+      time: val['display_time']
+    });
   });
   return result;
 }
 
-export function getStockDetail(res, code, cost, count) {
+export function getStockDetail(res, code, cost=0, count=0) {
   var result = res.split('=')[1];
   if (result.length <= 10) {
     console.log('no result');
@@ -75,8 +73,8 @@ export function getStockDetail(res, code, cost, count) {
     lowPrice = getFixedNum(itemArr[7]), // 最低
     date = Number(itemArr[8]), // 日期
     time = Number(itemArr[9]); // 时间
-  var rangePrice = getFixedNum(curPrice - yesPrice);
-  var range = getFixedNum((curPrice - yesPrice) / yesPrice * 100);
+  var rangePrice = curPrice == 0 ? 0 : getFixedNum(curPrice - yesPrice);
+  var range = curPrice == 0 ? 0 : getFixedNum((curPrice - yesPrice) / yesPrice * 100);
   cost = getFixedNum(cost, 3)
   var profit = curPrice == 0 ? 0 : (cost == 0 ? 0 : getFixedNum((curPrice - cost) * count, 3))
 

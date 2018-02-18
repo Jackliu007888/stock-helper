@@ -9750,8 +9750,9 @@ function getStockBySuggest(sug) {
 
 // http://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php?num=100&symbol=sz002183&rn=25278288
 var url_get_stock_trade = 'http://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php';
-function getStockTrade(code, num) {
-  var num = num ? num : 20000;
+function getStockTrade(code) {
+  var num = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 20000;
+
   return _axios2.default.get(url_get_stock_trade + '?num=' + num + '&symbol=' + code + '&rn=' + Math.random(4).toString().slice(2, 10)).then(function (res) {
     return Promise.resolve(res.data);
   });
@@ -10681,7 +10682,7 @@ function getStockTradeDetail(res) {
     console.log(e.toString());
   }
 
-  console.log(trade_item_list);
+  // console.log(trade_item_list);
 
   trade_item_list = trade_item_list.filter(function (item, index) {
     return parseInt(item[2]) > 0;
@@ -10693,8 +10694,7 @@ function getStockTradeDetail(res) {
     return index % lenTimes == 0;
   });
 
-  if (trade_item_list.length > 100) {}
-
+  // 反转数组
   var revList = trade_item_list.reverse();
 
   var resultList = [];
@@ -10703,7 +10703,7 @@ function getStockTradeDetail(res) {
     resultList.push(element);
   }
 
-  // 放大趋势
+  // 放大趋势，适应peity
   var minVal = resultList.min();
   var maxVal = resultList.max();
   var times = 10 / (maxVal - minVal);
@@ -10716,12 +10716,18 @@ function getStockTradeDetail(res) {
 function getAnnouncementDetail(res) {
   var result = new Array();
   res['data']['a_stock']['items'].forEach(function (val, idx) {
-    result.push({ content: val['content_text'], time: val['display_time'] });
+    result.push({
+      content: val['content_text'],
+      time: val['display_time']
+    });
   });
   return result;
 }
 
-function getStockDetail(res, code, cost, count) {
+function getStockDetail(res, code) {
+  var cost = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var count = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
   var result = res.split('=')[1];
   if (result.length <= 10) {
     console.log('no result');
@@ -10744,8 +10750,8 @@ function getStockDetail(res, code, cost, count) {
   date = Number(itemArr[8]),
       // 日期
   time = Number(itemArr[9]); // 时间
-  var rangePrice = (0, _base.getFixedNum)(curPrice - yesPrice);
-  var range = (0, _base.getFixedNum)((curPrice - yesPrice) / yesPrice * 100);
+  var rangePrice = curPrice == 0 ? 0 : (0, _base.getFixedNum)(curPrice - yesPrice);
+  var range = curPrice == 0 ? 0 : (0, _base.getFixedNum)((curPrice - yesPrice) / yesPrice * 100);
   cost = (0, _base.getFixedNum)(cost, 3);
   var profit = curPrice == 0 ? 0 : cost == 0 ? 0 : (0, _base.getFixedNum)((curPrice - cost) * count, 3);
 
@@ -14454,7 +14460,7 @@ exports.default = {
     var _this = this;
 
     var checkStock = function checkStock(rule, value, callback) {
-      console.log(_this.formInline.code);
+      // console.log(this.formInline.code);
       setTimeout(function () {
         if (!(0, _base.check)(_this.formInline.code.slice(-6))) {
           callback(new Error('请输入正确的股票代码'));
@@ -14506,10 +14512,12 @@ exports.default = {
   mounted: function mounted() {
     var _this2 = this;
 
-    // 获得股票数据
-    setInterval(function () {
-      _this2._getALLStock(_this2.localStock);
-    }, 10000);
+    // 获得股票数据, 打开设置的时候不更新
+    if (this.setModeChecked) {
+      setInterval(function () {
+        _this2._getALLStock(_this2.localStock);
+      }, 10000);
+    }
     // 进度条
     setInterval(function () {
       _this2._progressIncrease();
@@ -14551,7 +14559,7 @@ exports.default = {
           var tempStock = item;
           tempStock.setModeChecked = _this3.setModeChecked;
           _this3.stocks.splice(index, 1, tempStock);
-          console.log(item);
+          // console.log(item);
         });
       });
 
@@ -14579,6 +14587,9 @@ exports.default = {
     }
   },
   methods: {
+    openWallStreetUrl: function openWallStreetUrl() {
+      window.open('https://wallstreetcn.com/live/a-stock');
+    },
     lineData: function lineData(index, row) {
       return this.data.indexOfAtt('code', row.peity).toString();
     },
@@ -14661,6 +14672,8 @@ exports.default = {
           upLimit = _formInline.upLimit,
           downLimit = _formInline.downLimit;
 
+      cost = cost ? cost : 0;
+      count = count ? count : 0;
       this.$refs[formName].validate(function (valid) {
         if (valid) {
           _this7._getStockByCode(code, cost, count, upLimit, downLimit);
@@ -14724,7 +14737,7 @@ exports.default = {
     _getStockByCode: function _getStockByCode() {
       var code = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'sz002183';
       var cost = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-      var count = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+      var count = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '0';
 
       var _this10 = this;
 
@@ -14779,6 +14792,7 @@ exports.default = {
         stockWidthTemp += (0, _base.getColWidth)(val);
       });
       this.stockWidth = stockWidthTemp < _base.MIN_STOCKWIDTH_WITH_SET && this.setModeChecked ? _base.MIN_STOCKWIDTH_WITH_SET : stockWidthTemp;
+      // 如果打开设置， 宽度为固定宽度；股票、现价、涨跌幅、涨跌额、上限、下限、成本、持仓、操作
       if (this.setModeChecked) {
         this.stockWidth = baseWidth + (0, _base.getColWidth)('set') + (0, _base.getColWidth)('upLimit') + (0, _base.getColWidth)('downLimit') + (0, _base.getColWidth)('cost') + (0, _base.getColWidth)('count');
       } else {
@@ -14794,6 +14808,10 @@ exports.default = {
     ScrollMsgLine: _ScrollMsgLine2.default
   }
 }; //
+//
+//
+//
+//
 //
 //
 //
@@ -57271,7 +57289,7 @@ exports = module.exports = __webpack_require__(74)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 0.6rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.footer {\n  width: 100%;\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 199px !important;\n}\n.mainWithSetMode {\n  padding-bottom: 190px !important;\n}\n.bottom {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  flex-wrap: nowrap;\n}\n.announcement-wrapper {\n  padding-top: 6px;\n  width: 50px;\n}\n.set-mode-checked-wrapper {\n  flex-shrink: 0;\n  padding-top: 6px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  padding-right: 10px;\n}\n.progress-wrapper {\n  flex-shrink: 0;\n  padding-top: 8px;\n  padding-right: 5px;\n}\nbody {\n  padding: 0.2rem;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 0.6rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.footer {\n  width: 100%;\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 170px !important;\n}\n.mainWithSetMode {\n  padding-bottom: 170px !important;\n}\n.bottom {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  flex-wrap: nowrap;\n}\n.announcement-wrapper {\n  padding-top: 6px;\n  width: 50px;\n}\n.announcement-wrapper:hover {\n  cursor: pointer;\n}\n.set-mode-checked-wrapper {\n  flex-shrink: 0;\n  padding-top: 6px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  padding-right: 10px;\n}\n.progress-wrapper {\n  flex-shrink: 0;\n  padding-top: 8px;\n  padding-right: 5px;\n}\nbody {\n  padding: 0.2rem;\n}\n.loading {\n  height: 2rem;\n}\n", ""]);
 
 // exports
 
@@ -57909,536 +57927,559 @@ var render = function() {
       "div",
       { staticClass: "main", class: { mainWithSetMode: _vm.setModeChecked } },
       [
-        _c(
-          "div",
-          { staticClass: "header-line" },
-          [
-            _c(
-              "el-table",
-              {
-                ref: "stockTable",
-                staticStyle: { width: "100%" },
-                attrs: {
-                  align: "center",
-                  "header-align": "center",
-                  size: "mini",
-                  data: _vm.sortStocks,
-                  "cell-class-name": _vm.cellClassName
-                }
-              },
+        !_vm.stocks.length
+          ? _c("div", { staticClass: "loading" }, [
+              _c("span", [_vm._v(_vm._s(_vm.lodingMsg))])
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        _vm.stocks.length
+          ? _c(
+              "div",
+              { staticClass: "header-line" },
               [
-                _c("el-table-column", {
-                  attrs: { label: "股票" },
-                  scopedSlots: _vm._u([
-                    {
-                      key: "default",
-                      fn: function(scope) {
-                        return [
-                          _c(
-                            "a",
-                            {
-                              staticClass: "stock-link",
-                              attrs: {
-                                href:
-                                  "http://stockpage.10jqka.com.cn/" +
-                                  scope.row.code.slice(2) +
-                                  "/",
-                                target: "_blank"
-                              }
-                            },
-                            [
-                              _vm._v(_vm._s(scope.row.name)),
-                              _c("span", { staticClass: "stock-code" }, [
-                                _vm._v(_vm._s(scope.row.code))
-                              ])
-                            ]
-                          )
-                        ]
-                      }
+                _c(
+                  "el-table",
+                  {
+                    ref: "stockTable",
+                    staticStyle: { width: "100%" },
+                    attrs: {
+                      align: "center",
+                      "header-align": "center",
+                      size: "mini",
+                      data: _vm.sortStocks,
+                      "cell-class-name": _vm.cellClassName
                     }
-                  ])
-                }),
-                _vm._v(" "),
-                _c("el-table-column", {
-                  attrs: {
-                    prop: "curPrice",
-                    label: "现价",
-                    formatter: _vm.formatterFixedTwo,
-                    width: "50",
-                    sortable: !_vm.setModeChecked
-                  }
-                }),
-                _vm._v(" "),
-                _c("el-table-column", {
-                  attrs: {
-                    label: "涨跌幅",
-                    prop: "range",
-                    width: "70",
-                    formatter: _vm.formatter,
-                    sortable: !_vm.setModeChecked
-                  }
-                }),
-                _vm._v(" "),
-                _c("el-table-column", {
-                  attrs: {
-                    prop: "rangePrice",
-                    label: "涨跌额",
-                    width: "70",
-                    formatter: _vm.formatterFixedTwo,
-                    sortable: !_vm.setModeChecked
-                  }
-                }),
-                _vm._v(" "),
-                _vm.colList.indexOf("toPrice") != -1 && !_vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: {
-                        prop: "toPrice",
-                        label: "今开",
-                        formatter: _vm.formatterFixedTwo,
-                        width: "40"
-                      },
+                  },
+                  [
+                    _c("el-table-column", {
+                      attrs: { label: "股票" },
                       scopedSlots: _vm._u([
                         {
                           key: "default",
                           fn: function(scope) {
                             return [
-                              _c("span", {
-                                domProps: {
-                                  innerHTML: _vm._s(scope.row.toPrice)
-                                }
-                              })
+                              _c(
+                                "a",
+                                {
+                                  staticClass: "stock-link",
+                                  attrs: {
+                                    href:
+                                      "http://finance.sina.com.cn/realstock/company/" +
+                                      scope.row.code +
+                                      "/nc.shtml",
+                                    target: "_blank"
+                                  }
+                                },
+                                [
+                                  _vm._v(_vm._s(scope.row.name)),
+                                  _c("span", { staticClass: "stock-code" }, [
+                                    _vm._v(_vm._s(scope.row.code))
+                                  ])
+                                ]
+                              )
                             ]
                           }
                         }
                       ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.colList.indexOf("highPrice") != -1 && !_vm.setModeChecked
-                  ? _c("el-table-column", {
+                    }),
+                    _vm._v(" "),
+                    _c("el-table-column", {
                       attrs: {
-                        prop: "highPrice",
-                        label: "最高",
+                        prop: "curPrice",
+                        label: "现价",
                         formatter: _vm.formatterFixedTwo,
-                        width: "40"
-                      },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("span", {
-                                domProps: {
-                                  innerHTML: _vm._s(scope.row.highPrice)
-                                }
-                              })
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.colList.indexOf("lowPrice") != -1 && !_vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: {
-                        prop: "lowPrice",
-                        label: "最低",
-                        formatter: _vm.formatterFixedTwo,
-                        width: "40"
-                      },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("span", {
-                                domProps: {
-                                  innerHTML: _vm._s(scope.row.lowPrice)
-                                }
-                              })
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.colList.indexOf("profit") != -1 && !_vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: {
-                        prop: "profit",
-                        label: "盈亏",
                         width: "50",
                         sortable: !_vm.setModeChecked
-                      },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("span", {
-                                domProps: {
-                                  innerHTML: _vm._s(scope.row.profit)
-                                }
-                              })
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.colList.indexOf("cost") != -1
-                  ? _c("el-table-column", {
-                      attrs: { label: "成本", width: "45" },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("el-input", {
-                                directives: [
-                                  {
-                                    name: "show",
-                                    rawName: "v-show",
-                                    value: scope.row.edit,
-                                    expression: "scope.row.edit"
-                                  }
-                                ],
-                                attrs: { size: "mini" },
-                                model: {
-                                  value: _vm.localStock[scope.$index].cost,
-                                  callback: function($$v) {
-                                    _vm.$set(
-                                      _vm.localStock[scope.$index],
-                                      "cost",
-                                      $$v
-                                    )
-                                  },
-                                  expression: "localStock[scope.$index].cost"
-                                }
-                              }),
-                              _vm._v(" "),
-                              _c(
-                                "span",
-                                {
-                                  directives: [
-                                    {
-                                      name: "show",
-                                      rawName: "v-show",
-                                      value: !scope.row.edit,
-                                      expression: "!scope.row.edit"
-                                    }
-                                  ]
-                                },
-                                [_vm._v(_vm._s(scope.row.cost))]
-                              )
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.colList.indexOf("count") != -1
-                  ? _c("el-table-column", {
-                      attrs: { label: "持仓", width: "45" },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("el-input", {
-                                directives: [
-                                  {
-                                    name: "show",
-                                    rawName: "v-show",
-                                    value: scope.row.edit,
-                                    expression: "scope.row.edit"
-                                  }
-                                ],
-                                attrs: { size: "mini" },
-                                model: {
-                                  value: _vm.localStock[scope.$index].count,
-                                  callback: function($$v) {
-                                    _vm.$set(
-                                      _vm.localStock[scope.$index],
-                                      "count",
-                                      $$v
-                                    )
-                                  },
-                                  expression: "localStock[scope.$index].count"
-                                }
-                              }),
-                              _vm._v(" "),
-                              _c(
-                                "span",
-                                {
-                                  directives: [
-                                    {
-                                      name: "show",
-                                      rawName: "v-show",
-                                      value: !scope.row.edit,
-                                      expression: "!scope.row.edit"
-                                    }
-                                  ]
-                                },
-                                [_vm._v(_vm._s(scope.row.count))]
-                              )
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: { label: "上限", width: "45" },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("el-input", {
-                                directives: [
-                                  {
-                                    name: "show",
-                                    rawName: "v-show",
-                                    value: scope.row.edit,
-                                    expression: "scope.row.edit"
-                                  }
-                                ],
-                                attrs: { size: "mini" },
-                                model: {
-                                  value: _vm.localStock[scope.$index].upLimit,
-                                  callback: function($$v) {
-                                    _vm.$set(
-                                      _vm.localStock[scope.$index],
-                                      "upLimit",
-                                      $$v
-                                    )
-                                  },
-                                  expression: "localStock[scope.$index].upLimit"
-                                }
-                              }),
-                              _vm._v(" "),
-                              _c(
-                                "span",
-                                {
-                                  directives: [
-                                    {
-                                      name: "show",
-                                      rawName: "v-show",
-                                      value: !scope.row.edit,
-                                      expression: "!scope.row.edit"
-                                    }
-                                  ]
-                                },
-                                [
-                                  _vm._v(
-                                    _vm._s(_vm.localStock[scope.$index].upLimit)
-                                  )
-                                ]
-                              )
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: { label: "下限", width: "45" },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("el-input", {
-                                directives: [
-                                  {
-                                    name: "show",
-                                    rawName: "v-show",
-                                    value: scope.row.edit,
-                                    expression: "scope.row.edit"
-                                  }
-                                ],
-                                attrs: { size: "mini" },
-                                model: {
-                                  value: _vm.localStock[scope.$index].downLimit,
-                                  callback: function($$v) {
-                                    _vm.$set(
-                                      _vm.localStock[scope.$index],
-                                      "downLimit",
-                                      $$v
-                                    )
-                                  },
-                                  expression:
-                                    "localStock[scope.$index].downLimit"
-                                }
-                              }),
-                              _vm._v(" "),
-                              _c(
-                                "span",
-                                {
-                                  directives: [
-                                    {
-                                      name: "show",
-                                      rawName: "v-show",
-                                      value: !scope.row.edit,
-                                      expression: "!scope.row.edit"
-                                    }
-                                  ]
-                                },
-                                [
-                                  _vm._v(
-                                    _vm._s(
-                                      _vm.localStock[scope.$index].downLimit
-                                    )
-                                  )
-                                ]
-                              )
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.colList.indexOf("chart") != -1 && !_vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: { label: "走势图", width: "100" },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(props) {
-                            return [
-                              props.row.lineData.length
-                                ? _c("peity", {
-                                    attrs: {
-                                      type: _vm.setPeity.type,
-                                      options: _vm.setPeity.options,
-                                      data: props.row.lineData
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("el-table-column", {
+                      attrs: {
+                        label: "涨跌幅",
+                        prop: "range",
+                        width: "70",
+                        formatter: _vm.formatter,
+                        sortable: !_vm.setModeChecked
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("el-table-column", {
+                      attrs: {
+                        prop: "rangePrice",
+                        label: "涨跌额",
+                        width: "70",
+                        formatter: _vm.formatterFixedTwo,
+                        sortable: !_vm.setModeChecked
+                      }
+                    }),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("toPrice") != -1 && !_vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: {
+                            prop: "toPrice",
+                            label: "今开",
+                            formatter: _vm.formatterFixedTwo,
+                            width: "40"
+                          },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("span", {
+                                    domProps: {
+                                      innerHTML: _vm._s(scope.row.toPrice)
                                     }
                                   })
-                                : _vm._e()
-                            ]
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e(),
-                _vm._v(" "),
-                _vm.setModeChecked
-                  ? _c("el-table-column", {
-                      attrs: { label: "操作", fixed: "right", width: "145" },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return _vm.setModeChecked
-                              ? [
-                                  _c(
-                                    "el-button",
-                                    {
-                                      attrs: {
-                                        disabled: scope.$index == 0,
-                                        type: "text",
-                                        size: "mini"
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("highPrice") != -1 &&
+                    !_vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: {
+                            prop: "highPrice",
+                            label: "最高",
+                            formatter: _vm.formatterFixedTwo,
+                            width: "40"
+                          },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("span", {
+                                    domProps: {
+                                      innerHTML: _vm._s(scope.row.highPrice)
+                                    }
+                                  })
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("lowPrice") != -1 && !_vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: {
+                            prop: "lowPrice",
+                            label: "最低",
+                            formatter: _vm.formatterFixedTwo,
+                            width: "40"
+                          },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("span", {
+                                    domProps: {
+                                      innerHTML: _vm._s(scope.row.lowPrice)
+                                    }
+                                  })
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("profit") != -1 && !_vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: {
+                            prop: "profit",
+                            label: "盈亏",
+                            width: "50",
+                            sortable: !_vm.setModeChecked
+                          },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("span", {
+                                    domProps: {
+                                      innerHTML: _vm._s(scope.row.profit)
+                                    }
+                                  })
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("cost") != -1 || _vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: { label: "成本", width: "45" },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("el-input", {
+                                    directives: [
+                                      {
+                                        name: "show",
+                                        rawName: "v-show",
+                                        value: scope.row.edit,
+                                        expression: "scope.row.edit"
+                                      }
+                                    ],
+                                    attrs: { size: "mini" },
+                                    model: {
+                                      value: _vm.localStock[scope.$index].cost,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.localStock[scope.$index],
+                                          "cost",
+                                          $$v
+                                        )
                                       },
-                                      nativeOn: {
-                                        click: function($event) {
-                                          $event.preventDefault()
-                                          _vm.moveUp(scope.$index)
-                                        }
-                                      }
-                                    },
-                                    [
-                                      _vm._v(
-                                        "\n              上移\n            "
-                                      )
-                                    ]
-                                  ),
+                                      expression:
+                                        "localStock[scope.$index].cost"
+                                    }
+                                  }),
                                   _vm._v(" "),
                                   _c(
-                                    "el-button",
+                                    "span",
                                     {
-                                      attrs: {
-                                        disabled:
-                                          scope.$index + 1 ==
-                                          _vm.localStockLength,
-                                        type: "text",
-                                        size: "mini"
+                                      directives: [
+                                        {
+                                          name: "show",
+                                          rawName: "v-show",
+                                          value: !scope.row.edit,
+                                          expression: "!scope.row.edit"
+                                        }
+                                      ]
+                                    },
+                                    [_vm._v(_vm._s(scope.row.cost))]
+                                  )
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("count") != -1 || _vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: { label: "持仓", width: "45" },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("el-input", {
+                                    directives: [
+                                      {
+                                        name: "show",
+                                        rawName: "v-show",
+                                        value: scope.row.edit,
+                                        expression: "scope.row.edit"
+                                      }
+                                    ],
+                                    attrs: { size: "mini" },
+                                    model: {
+                                      value: _vm.localStock[scope.$index].count,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.localStock[scope.$index],
+                                          "count",
+                                          $$v
+                                        )
                                       },
-                                      nativeOn: {
-                                        click: function($event) {
-                                          $event.preventDefault()
-                                          _vm.moveDown(scope.$index)
-                                        }
-                                      }
-                                    },
-                                    [
-                                      _vm._v(
-                                        "\n              下移\n            "
-                                      )
-                                    ]
-                                  ),
+                                      expression:
+                                        "localStock[scope.$index].count"
+                                    }
+                                  }),
                                   _vm._v(" "),
                                   _c(
-                                    "el-button",
+                                    "span",
                                     {
-                                      attrs: { type: "text", size: "mini" },
-                                      nativeOn: {
-                                        click: function($event) {
-                                          $event.preventDefault()
-                                          _vm.edit(scope.$index)
+                                      directives: [
+                                        {
+                                          name: "show",
+                                          rawName: "v-show",
+                                          value: !scope.row.edit,
+                                          expression: "!scope.row.edit"
                                         }
-                                      }
+                                      ]
                                     },
-                                    [
-                                      _vm._v(
-                                        "\n              " +
-                                          _vm._s(
-                                            scope.row.edit ? "完成" : "编辑"
-                                          ) +
-                                          "\n            "
-                                      )
-                                    ]
-                                  ),
+                                    [_vm._v(_vm._s(scope.row.count))]
+                                  )
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: { label: "上限", width: "45" },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("el-input", {
+                                    directives: [
+                                      {
+                                        name: "show",
+                                        rawName: "v-show",
+                                        value: scope.row.edit,
+                                        expression: "scope.row.edit"
+                                      }
+                                    ],
+                                    attrs: { size: "mini" },
+                                    model: {
+                                      value:
+                                        _vm.localStock[scope.$index].upLimit,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.localStock[scope.$index],
+                                          "upLimit",
+                                          $$v
+                                        )
+                                      },
+                                      expression:
+                                        "localStock[scope.$index].upLimit"
+                                    }
+                                  }),
                                   _vm._v(" "),
                                   _c(
-                                    "el-button",
+                                    "span",
                                     {
-                                      attrs: { type: "text", size: "mini" },
-                                      nativeOn: {
-                                        click: function($event) {
-                                          $event.preventDefault()
-                                          _vm.deleteRow(scope.$index, scope.row)
+                                      directives: [
+                                        {
+                                          name: "show",
+                                          rawName: "v-show",
+                                          value: !scope.row.edit,
+                                          expression: "!scope.row.edit"
                                         }
-                                      }
+                                      ]
                                     },
                                     [
                                       _vm._v(
-                                        "\n              移除\n            "
+                                        _vm._s(
+                                          _vm.localStock[scope.$index].upLimit
+                                        )
                                       )
                                     ]
                                   )
                                 ]
-                              : undefined
-                          }
-                        }
-                      ])
-                    })
-                  : _vm._e()
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: { label: "下限", width: "45" },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return [
+                                  _c("el-input", {
+                                    directives: [
+                                      {
+                                        name: "show",
+                                        rawName: "v-show",
+                                        value: scope.row.edit,
+                                        expression: "scope.row.edit"
+                                      }
+                                    ],
+                                    attrs: { size: "mini" },
+                                    model: {
+                                      value:
+                                        _vm.localStock[scope.$index].downLimit,
+                                      callback: function($$v) {
+                                        _vm.$set(
+                                          _vm.localStock[scope.$index],
+                                          "downLimit",
+                                          $$v
+                                        )
+                                      },
+                                      expression:
+                                        "localStock[scope.$index].downLimit"
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c(
+                                    "span",
+                                    {
+                                      directives: [
+                                        {
+                                          name: "show",
+                                          rawName: "v-show",
+                                          value: !scope.row.edit,
+                                          expression: "!scope.row.edit"
+                                        }
+                                      ]
+                                    },
+                                    [
+                                      _vm._v(
+                                        _vm._s(
+                                          _vm.localStock[scope.$index].downLimit
+                                        )
+                                      )
+                                    ]
+                                  )
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.colList.indexOf("chart") != -1 && !_vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: { label: "走势图", width: "100" },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(props) {
+                                return [
+                                  props.row.lineData.length
+                                    ? _c("peity", {
+                                        attrs: {
+                                          type: _vm.setPeity.type,
+                                          options: _vm.setPeity.options,
+                                          data: props.row.lineData
+                                        }
+                                      })
+                                    : _vm._e()
+                                ]
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.setModeChecked
+                      ? _c("el-table-column", {
+                          attrs: {
+                            label: "操作",
+                            fixed: "right",
+                            width: "145"
+                          },
+                          scopedSlots: _vm._u([
+                            {
+                              key: "default",
+                              fn: function(scope) {
+                                return _vm.setModeChecked
+                                  ? [
+                                      _c(
+                                        "el-button",
+                                        {
+                                          attrs: {
+                                            disabled: scope.$index == 0,
+                                            type: "text",
+                                            size: "mini"
+                                          },
+                                          nativeOn: {
+                                            click: function($event) {
+                                              $event.preventDefault()
+                                              _vm.moveUp(scope.$index)
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            "\n              上移\n            "
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "el-button",
+                                        {
+                                          attrs: {
+                                            disabled:
+                                              scope.$index + 1 ==
+                                              _vm.localStockLength,
+                                            type: "text",
+                                            size: "mini"
+                                          },
+                                          nativeOn: {
+                                            click: function($event) {
+                                              $event.preventDefault()
+                                              _vm.moveDown(scope.$index)
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            "\n              下移\n            "
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "el-button",
+                                        {
+                                          attrs: { type: "text", size: "mini" },
+                                          nativeOn: {
+                                            click: function($event) {
+                                              $event.preventDefault()
+                                              _vm.edit(scope.$index)
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            "\n              " +
+                                              _vm._s(
+                                                scope.row.edit ? "完成" : "编辑"
+                                              ) +
+                                              "\n            "
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "el-button",
+                                        {
+                                          attrs: { type: "text", size: "mini" },
+                                          nativeOn: {
+                                            click: function($event) {
+                                              $event.preventDefault()
+                                              _vm.deleteRow(
+                                                scope.$index,
+                                                scope.row
+                                              )
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            "\n              移除\n            "
+                                          )
+                                        ]
+                                      )
+                                    ]
+                                  : undefined
+                              }
+                            }
+                          ])
+                        })
+                      : _vm._e()
+                  ],
+                  1
+                )
               ],
               1
             )
-          ],
-          1
-        )
+          : _vm._e()
       ]
     ),
     _vm._v(" "),
@@ -58634,7 +58675,8 @@ var render = function() {
             "div",
             {
               staticClass: "announcement-wrapper",
-              style: { width: _vm.announcementWidth + "px" }
+              style: { width: _vm.announcementWidth + "px" },
+              on: { click: _vm.openWallStreetUrl }
             },
             [_c("ScrollMsgLine", { attrs: { data: _vm.announcements } })],
             1

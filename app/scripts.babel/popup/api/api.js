@@ -18,8 +18,7 @@ export function getStockBySuggest(sug) {
 
 // http://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php?num=100&symbol=sz002183&rn=25278288
 const url_get_stock_trade = 'http://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php'
-export function getStockTrade(code, num) {
-  var num = num ? num : 20000
+export function getStockTrade(code, num=20000) {
   return axios.get(`${url_get_stock_trade}?num=${num}&symbol=${code}&rn=${(Math.random(4).toString()).slice(2,10)}`).then(res => {
     return Promise.resolve(res.data)
   })
