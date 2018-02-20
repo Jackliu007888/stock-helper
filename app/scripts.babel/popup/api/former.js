@@ -71,8 +71,9 @@ export function getStockDetail(res, code, cost=0, count=0) {
     // lowPrice = getFixedNum(itemArr[5]), // 未知
     // lowPrice = getFixedNum(itemArr[6]), // 未知
     lowPrice = getFixedNum(itemArr[7]), // 最低
-    date = Number(itemArr[8]), // 日期
-    time = Number(itemArr[9]); // 时间
+    date = itemArr[itemArr.length -3], // 日期
+    time = itemArr[itemArr.length -2]; // 时间
+    // console.log(itemArr)
   var rangePrice = curPrice == 0 ? 0 : getFixedNum(curPrice - yesPrice);
   var range = curPrice == 0 ? 0 : getFixedNum((curPrice - yesPrice) / yesPrice * 100);
   cost = getFixedNum(cost, 3)
@@ -90,8 +91,8 @@ export function getStockDetail(res, code, cost=0, count=0) {
     lowPrice,
     rangePrice,
     range,
-    // date,
-    // time,
+    date,
+    time,
     cost,
     count,
     profit

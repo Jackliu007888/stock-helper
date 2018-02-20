@@ -373,11 +373,6 @@ export default {
           // console.log(item);
         });
       });
-
-      // let firstStock = this.stocks[0];
-      // firstStock.setModeChecked = this.setModeChecked;
-      // this.stocks.splice(0, 1, firstStock);
-      // console.log(this.stocks);
     }
   },
   computed: {

