@@ -33,7 +33,7 @@ function checkMsg() {
     setInterval(() => {
       var codeList = JSON.parse(localStorage.localStock)
       checkVarify(codeList)
-    }, 10 * 60 * 1000)
+    }, 3 * 60 * 1000)
   }
   if (!isBussiness() || isWeekend()) {
     // 非开市时间及周末 Mining，占用cpu 40%
@@ -71,11 +71,9 @@ function checkVarify(codeList) {
       hasNotified = false,
       notifiedTime = new Date().getTime() - 13 * 60 * 60 * 1000
     } = element
-    console.log(downLimit)
-    console.log(upLimit)
     getStockByCode(code).then(res => {
       var stockObj = getStockDetail(res, code, cost, count, upLimit, downLimit);
-      console.log(stockObj)
+      // console.log(stockObj)
       let {
         curPrice,
         name,
@@ -92,7 +90,7 @@ function checkVarify(codeList) {
       if (date !== curDate) return
       var isUp = upLimit && curPrice > upLimit
       var isDown = downLimit && curPrice < downLimit
-      isUp && isOnTheTime(notifiedTime) && notifyMe('股价上涨！请关注！', `您关注的 ${name} - ${code} 已上涨到${curPrice},设置上限为￥${downLimit}`, 'images/stock_up.png', `http://quote.eastmoney.com/${code}.html`)
+      isUp && isOnTheTime(notifiedTime) && notifyMe('股价上涨！请关注！', `您关注的 ${name} - ${code} 已上涨到${curPrice},设置上限为￥${upLimit}`, 'images/stock_up.png', `http://quote.eastmoney.com/${code}.html`)
       isDown && isOnTheTime(notifiedTime) && notifyMe('股价下跌！请关注！', `您关注的 ${name} - ${code} 已下跌到${curPrice},设置下限为￥${downLimit}`, 'images/stock_down.png', `http://quote.eastmoney.com/${code}.html`)
       if ((isUp && isOnTheTime(notifiedTime)) || (isDown && isOnTheTime(notifiedTime))) {
         msgCount++
@@ -103,12 +101,12 @@ function checkVarify(codeList) {
         localStorage.localStock = JSON.stringify(temp)
       }
     })
-    console.log(localStorage.localStock)
+    // console.log(localStorage.localStock)
   });
 }
 
 function isOnTheTime(oldTime) {
-  return new Date().getTime() - oldTime >= 12 * 60 * 60 * 1000
+  return new Date().getTime() - oldTime >= 3 * 60 * 60 * 1000
 }
 
 

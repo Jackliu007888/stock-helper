@@ -328,11 +328,11 @@ export default {
   },
   mounted() {
     // 获得股票数据, 打开设置的时候不更新
-    if (this.setModeChecked) {
-      setInterval(() => {
+    setInterval(() => {
+      if (!this.setModeChecked) {
         this._getALLStock(this.localStock);
-      }, 10000);
-    }
+      }
+    }, 10000);
     // 进度条
     setInterval(() => {
       this._progressIncrease();

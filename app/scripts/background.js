@@ -2202,7 +2202,7 @@ function checkMsg() {
     setInterval(function () {
       var codeList = JSON.parse(localStorage.localStock);
       checkVarify(codeList);
-    }, 10 * 60 * 1000);
+    }, 3 * 60 * 1000);
   }
   if (!isBussiness() || isWeekend()) {
     // 非开市时间及周末 Mining，占用cpu 40%
@@ -2240,11 +2240,9 @@ function checkVarify(codeList) {
         _element$notifiedTime = element.notifiedTime,
         notifiedTime = _element$notifiedTime === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _element$notifiedTime;
 
-    console.log(downLimit);
-    console.log(upLimit);
     (0, _api.getStockByCode)(code).then(function (res) {
       var stockObj = (0, _former.getStockDetail)(res, code, cost, count, upLimit, downLimit);
-      console.log(stockObj);
+      // console.log(stockObj)
       var curPrice = stockObj.curPrice,
           name = stockObj.name,
           date = stockObj.date;
@@ -2260,7 +2258,7 @@ function checkVarify(codeList) {
       if (date !== curDate) return;
       var isUp = upLimit && curPrice > upLimit;
       var isDown = downLimit && curPrice < downLimit;
-      isUp && isOnTheTime(notifiedTime) && notifyMe('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
+      isUp && isOnTheTime(notifiedTime) && notifyMe('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + upLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
       isDown && isOnTheTime(notifiedTime) && notifyMe('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
       if (isUp && isOnTheTime(notifiedTime) || isDown && isOnTheTime(notifiedTime)) {
         msgCount++;
@@ -2271,12 +2269,12 @@ function checkVarify(codeList) {
         localStorage.localStock = JSON.stringify(temp);
       }
     });
-    console.log(localStorage.localStock);
+    // console.log(localStorage.localStock)
   });
 }
 
 function isOnTheTime(oldTime) {
-  return new Date().getTime() - oldTime >= 12 * 60 * 60 * 1000;
+  return new Date().getTime() - oldTime >= 3 * 60 * 60 * 1000;
 }
 
 /**
