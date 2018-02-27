@@ -10682,7 +10682,7 @@ function getStockTradeDetail(res) {
     console.log(e.toString());
   }
 
-  // console.log(trade_item_list);
+  console.log(trade_item_list);
 
   trade_item_list = trade_item_list.filter(function (item, index) {
     return parseInt(item[2]) > 0;
@@ -10704,8 +10704,8 @@ function getStockTradeDetail(res) {
   }
 
   // 放大趋势，适应peity
-  var minVal = resultList.min();
-  var maxVal = resultList.max();
+  var minVal = Math.min.apply(Math, resultList);
+  var maxVal = Math.max.apply(Math, resultList);
   var times = 10 / (maxVal - minVal);
   var mapResult = resultList.map(function (item, index, array) {
     return (item - minVal) * times;
@@ -15053,6 +15053,15 @@ exports.default = {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /***/ }),
 /* 100 */
@@ -15238,29 +15247,6 @@ Array.prototype.remove = function (val) {
   if (index > -1) {
     this.splice(index, 1);
   }
-};
-
-//最小值
-Array.prototype.min = function () {
-  var min = this[0];
-  var len = this.length;
-  for (var i = 1; i < len; i++) {
-    if (this[i] < min) {
-      min = this[i];
-    }
-  }
-  return min;
-};
-//最大值
-Array.prototype.max = function () {
-  var max = this[0];
-  var len = this.length;
-  for (var i = 1; i < len; i++) {
-    if (this[i] > max) {
-      max = this[i];
-    }
-  }
-  return max;
 };
 
 _vue2.default.use(_elementUi2.default);
@@ -57987,7 +57973,21 @@ var render = function() {
                         formatter: _vm.formatterFixedTwo,
                         width: "50",
                         sortable: !_vm.setModeChecked
-                      }
+                      },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(scope) {
+                            return [
+                              _c("span", {
+                                domProps: {
+                                  innerHTML: _vm._s(scope.row.curPrice)
+                                }
+                              })
+                            ]
+                          }
+                        }
+                      ])
                     }),
                     _vm._v(" "),
                     _c("el-table-column", {
@@ -57997,7 +57997,19 @@ var render = function() {
                         width: "70",
                         formatter: _vm.formatter,
                         sortable: !_vm.setModeChecked
-                      }
+                      },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(scope) {
+                            return [
+                              _c("span", {
+                                domProps: { innerHTML: _vm._s(scope.row.range) }
+                              })
+                            ]
+                          }
+                        }
+                      ])
                     }),
                     _vm._v(" "),
                     _c("el-table-column", {
@@ -58007,7 +58019,21 @@ var render = function() {
                         width: "70",
                         formatter: _vm.formatterFixedTwo,
                         sortable: !_vm.setModeChecked
-                      }
+                      },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "default",
+                          fn: function(scope) {
+                            return [
+                              _c("span", {
+                                domProps: {
+                                  innerHTML: _vm._s(scope.row.rangePrice)
+                                }
+                              })
+                            ]
+                          }
+                        }
+                      ])
                     }),
                     _vm._v(" "),
                     _vm.colList.indexOf("toPrice") != -1 && !_vm.setModeChecked

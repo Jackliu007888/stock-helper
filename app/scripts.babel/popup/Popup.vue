@@ -28,6 +28,9 @@
             :formatter="formatterFixedTwo"
             width="50"
             :sortable="!setModeChecked">
+            <template slot-scope="scope">
+              <span v-html="scope.row.curPrice"></span>
+            </template>
           </el-table-column>
             
           <el-table-column
@@ -36,6 +39,9 @@
             width="70"
             :formatter="formatter"
             :sortable="!setModeChecked">
+            <template slot-scope="scope">
+              <span v-html="scope.row.range"></span>
+            </template>
           </el-table-column>        
           
           <el-table-column
@@ -44,6 +50,9 @@
             width="70"
             :formatter="formatterFixedTwo"      
             :sortable="!setModeChecked">
+            <template slot-scope="scope">
+              <span v-html="scope.row.rangePrice"></span>
+            </template>
           </el-table-column>
 
           <el-table-column

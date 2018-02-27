@@ -27,31 +27,6 @@ Array.prototype.remove = function (val) {
   }
 };
 
-//最小值
-Array.prototype.min = function () {
-  var min = this[0];
-  var len = this.length;
-  for (var i = 1; i < len; i++) {
-    if (this[i] < min) {
-      min = this[i];
-    }
-  }
-  return min;
-}
-//最大值
-Array.prototype.max = function () {
-  var max = this[0];
-  var len = this.length;
-  for (var i = 1; i < len; i++) {
-    if (this[i] > max) {
-      max = this[i];
-    }
-  }
-  return max;
-}
-
-
-
 Vue.use(ElementUI);
 Vue.use(scroll);
 new Vue({

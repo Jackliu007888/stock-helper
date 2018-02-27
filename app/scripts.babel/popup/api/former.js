@@ -14,7 +14,7 @@ export function getStockTradeDetail(res) {
     console.log(e.toString());
   }
 
-  // console.log(trade_item_list);
+  console.log(trade_item_list);
 
   trade_item_list = trade_item_list.filter((item, index) => {
     return parseInt(item[2]) > 0
@@ -36,8 +36,8 @@ export function getStockTradeDetail(res) {
   }
 
   // 放大趋势，适应peity
-  var minVal = resultList.min()
-  var maxVal = resultList.max()
+  var minVal = Math.min(...resultList)
+  var maxVal = Math.max(...resultList)
   var times = (10 / (maxVal - minVal))
   var mapResult = resultList.map((item, index, array) => {
     return (item - minVal) * times

