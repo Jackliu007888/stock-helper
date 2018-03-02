@@ -14631,6 +14631,7 @@ exports.default = {
       var locStock = this.localStock[index];
       if (curStock.edit) {
         this.$set(curStock, 'edit', false);
+        this.$set(locStock, 'notifiedTime', new Date().getTime() - 13 * 60 * 60 * 1000);
         curStock.cost = locStock.cost;
         curStock.count = locStock.count;
         curStock.upLimit = locStock.upLimit;
@@ -14638,9 +14639,6 @@ exports.default = {
         curStock.profit = curStock.curPrice == 0 || curStock.cost == 0 ? 0 : (0, _base.getFixedNum)((curStock.curPrice - curStock.cost) * curStock.count, 3);
       } else {
         this.$set(curStock, 'edit', true);
-        if (this.colList.indexOf('downLimit') == -1) this.colList.push('downLimit');
-        if (this.colList.indexOf('cost') == -1) this.colList.push('cost');
-        if (this.colList.indexOf('count') == -1) this.colList.push('count');
         this.stocks.forEach(function (val, idx) {
           if (index != idx && val.edit == true) {
             _this6.$set(_this6.stocks[idx], 'edit', false);
@@ -14725,7 +14723,6 @@ exports.default = {
           stocks[idxOfStocks]['lineData'] = _this9.data.toString();
           _this9.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks]);
         } else {
-          console.log(code);
           _this9.stocks.push({ code: code, lineData: _this9.data.toString() });
         }
       });
@@ -14776,7 +14773,7 @@ exports.default = {
 
       (0, _api.getAnnouncement)(limit).then(function (res) {
         _this11.announcements = (0, _former.getAnnouncementDetail)(res);
-        console.log(_this11.announcements);
+        // console.log(this.announcements);
       });
     },
     _setStockWidth: function _setStockWidth() {
@@ -14784,7 +14781,7 @@ exports.default = {
       var baseWidth = (0, _base.getColWidth)('init') + (0, _base.getColWidth)('curPrice') + (0, _base.getColWidth)('range') + (0, _base.getColWidth)('rangePrice');
       var stockWidthTemp = 0;
       this.colList.forEach(function (val, idx) {
-        console.log(val, (0, _base.getColWidth)(val));
+        // console.log(val, getColWidth(val));
         stockWidthTemp += (0, _base.getColWidth)(val);
       });
       this.stockWidth = stockWidthTemp < _base.MIN_STOCKWIDTH_WITH_SET && this.setModeChecked ? _base.MIN_STOCKWIDTH_WITH_SET : stockWidthTemp;
@@ -14804,15 +14801,6 @@ exports.default = {
     ScrollMsgLine: _ScrollMsgLine2.default
   }
 }; //
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -57271,7 +57259,7 @@ exports = module.exports = __webpack_require__(74)(false);
 
 
 // module
-exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 0.6rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.footer {\n  width: 100%;\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 170px !important;\n}\n.mainWithSetMode {\n  padding-bottom: 170px !important;\n}\n.bottom {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  flex-wrap: nowrap;\n}\n.announcement-wrapper {\n  padding-top: 6px;\n  width: 50px;\n}\n.announcement-wrapper:hover {\n  cursor: pointer;\n}\n.set-mode-checked-wrapper {\n  flex-shrink: 0;\n  padding-top: 6px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  padding-right: 10px;\n}\n.progress-wrapper {\n  flex-shrink: 0;\n  padding-top: 8px;\n  padding-right: 5px;\n}\nbody {\n  padding: 0.2rem;\n}\n.loading {\n  height: 2rem;\n}\n", ""]);
+exports.push([module.i, "\n* {\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\nhtml {\n  font-size: 20px;\n}\n.stock {\n  height: 100%;\n  position: relative;\n}\n.stock input {\n  padding-left: 0;\n  padding-right: 0;\n}\n.input {\n  padding: 0.6rem 0 0;\n}\n.add-stock input {\n  text-align: left;\n}\n.stock-up .cell,\n.stock-down .cell {\n  color: #fff;\n  font-weight: 700;\n  height: 1.25rem;\n  line-height: 1.25rem;\n  width: 80%;\n  border-radius: 0.25rem;\n}\n.stock-up .cell {\n  background-color: #ff4b4b;\n}\n.stock-down .cell {\n  background-color: #0faf4b;\n}\ntd .cell {\n  margin: 0 auto;\n}\n.el-table tbody .el-table_1_column_1 .cell {\n  line-height: 0.8rem;\n  width: 5rem;\n}\n.el-table th {\n  padding-top: 0px;\n}\na.stock-link {\n  font-size: 0.8rem;\n  color: #000;\n  font-weight: 500;\n  text-decoration: none;\n}\na.stock-link .stock-code {\n  display: block;\n  font-size: 0.5rem;\n  font-weight: 300;\n}\n.el-scrollbar .el-autocomplete-suggestion__wrap {\n  max-height: 5rem;\n}\ntd .cell,\nth .cell {\n  padding-left: 0 !important;\n  padding-right: 0 !important;\n}\n.el-checkbox-group .el-checkbox {\n  height: 28px;\n}\n.footer {\n  width: 100%;\n  background: #fff;\n  position: fixed;\n  bottom: 0;\n  height: 39px;\n  z-index: 1;\n}\n.main {\n  padding-bottom: 30px;\n  z-index: -1;\n}\n.footerWithSetMode {\n  height: 170px !important;\n  z-index: 100;\n}\n.mainWithSetMode {\n  padding-bottom: 170px !important;\n}\n.bottom {\n  width: 100%;\n  display: flex;\n  flex-direction: row;\n  flex-wrap: nowrap;\n}\n.announcement-wrapper {\n  padding-top: 6px;\n  width: 50px;\n}\n.announcement-wrapper:hover {\n  cursor: pointer;\n}\n.set-mode-checked-wrapper {\n  flex-shrink: 0;\n  padding-top: 6px;\n  padding-bottom: 10px;\n  padding-left: 5px;\n  padding-right: 10px;\n}\n.progress-wrapper {\n  flex-shrink: 0;\n  padding-top: 8px;\n  padding-right: 5px;\n}\nbody {\n  padding: 0.2rem;\n}\n.loading {\n  height: 2rem;\n}\n", ""]);
 
 // exports
 
@@ -57973,21 +57961,7 @@ var render = function() {
                         formatter: _vm.formatterFixedTwo,
                         width: "50",
                         sortable: !_vm.setModeChecked
-                      },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("span", {
-                                domProps: {
-                                  innerHTML: _vm._s(scope.row.curPrice)
-                                }
-                              })
-                            ]
-                          }
-                        }
-                      ])
+                      }
                     }),
                     _vm._v(" "),
                     _c("el-table-column", {
@@ -57997,19 +57971,7 @@ var render = function() {
                         width: "70",
                         formatter: _vm.formatter,
                         sortable: !_vm.setModeChecked
-                      },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("span", {
-                                domProps: { innerHTML: _vm._s(scope.row.range) }
-                              })
-                            ]
-                          }
-                        }
-                      ])
+                      }
                     }),
                     _vm._v(" "),
                     _c("el-table-column", {
@@ -58019,21 +57981,7 @@ var render = function() {
                         width: "70",
                         formatter: _vm.formatterFixedTwo,
                         sortable: !_vm.setModeChecked
-                      },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(scope) {
-                            return [
-                              _c("span", {
-                                domProps: {
-                                  innerHTML: _vm._s(scope.row.rangePrice)
-                                }
-                              })
-                            ]
-                          }
-                        }
-                      ])
+                      }
                     }),
                     _vm._v(" "),
                     _vm.colList.indexOf("toPrice") != -1 && !_vm.setModeChecked

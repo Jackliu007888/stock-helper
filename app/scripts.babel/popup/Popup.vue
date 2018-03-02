@@ -28,9 +28,6 @@
             :formatter="formatterFixedTwo"
             width="50"
             :sortable="!setModeChecked">
-            <template slot-scope="scope">
-              <span v-html="scope.row.curPrice"></span>
-            </template>
           </el-table-column>
             
           <el-table-column
@@ -39,9 +36,6 @@
             width="70"
             :formatter="formatter"
             :sortable="!setModeChecked">
-            <template slot-scope="scope">
-              <span v-html="scope.row.range"></span>
-            </template>
           </el-table-column>        
           
           <el-table-column
@@ -50,9 +44,6 @@
             width="70"
             :formatter="formatterFixedTwo"      
             :sortable="!setModeChecked">
-            <template slot-scope="scope">
-              <span v-html="scope.row.rangePrice"></span>
-            </template>
           </el-table-column>
 
           <el-table-column
@@ -462,6 +453,7 @@ export default {
       let locStock = this.localStock[index];
       if (curStock.edit) {
         this.$set(curStock, 'edit', false);
+        this.$set(locStock, 'notifiedTime', new Date().getTime() - 13 * 60 * 60 * 1000);
         curStock.cost = locStock.cost;
         curStock.count = locStock.count;
         curStock.upLimit = locStock.upLimit;
@@ -475,10 +467,6 @@ export default {
               );
       } else {
         this.$set(curStock, 'edit', true);
-        if (this.colList.indexOf('downLimit') == -1)
-          this.colList.push('downLimit');
-        if (this.colList.indexOf('cost') == -1) this.colList.push('cost');
-        if (this.colList.indexOf('count') == -1) this.colList.push('count');
         this.stocks.forEach((val, idx) => {
           if (index != idx && val.edit == true) {
             this.$set(this.stocks[idx], 'edit', false);
@@ -556,7 +544,6 @@ export default {
           stocks[idxOfStocks]['lineData'] = this.data.toString();
           this.stocks.splice(idxOfStocks, 1, stocks[idxOfStocks]);
         } else {
-          console.log(code);
           this.stocks.push({ code, lineData: this.data.toString() });
         }
       });
@@ -604,7 +591,7 @@ export default {
     _getAnnouncement(limit = 20) {
       getAnnouncement(limit).then(res => {
         this.announcements = getAnnouncementDetail(res);
-        console.log(this.announcements);
+        // console.log(this.announcements);
       });
     },
     _setStockWidth() {
@@ -616,7 +603,7 @@ export default {
         getColWidth('rangePrice');
       var stockWidthTemp = 0;
       this.colList.forEach(function(val, idx) {
-        console.log(val, getColWidth(val));
+        // console.log(val, getColWidth(val));
         stockWidthTemp += getColWidth(val);
       });
       this.stockWidth =
@@ -752,6 +739,7 @@ td .cell, th .cell {
 
 .footerWithSetMode {
   height: 170px !important;
+    z-index: 100;
 }
 
 .mainWithSetMode {
