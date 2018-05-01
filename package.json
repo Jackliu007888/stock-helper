@@ -1,5 +1,5 @@
 {
-  "name": "chrom-extensions",
+  "name": "stock-helper",
   "private": true,
   "engines": {
     "node": ">=0.8.0"
@@ -58,7 +58,7 @@
     "babel-plugin-component": "^1.0.0",
     "babel-preset-env": "^1.6.1",
     "css-loader": "^0.28.8",
-    "element-ui": "^2.0.10",
+    "element-ui": "^2.3.7",
     "file-loader": "^1.1.6",
     "prettier": "^1.10.2",
     "style-loader": "^0.19.1",
@@ -67,6 +67,8 @@
     "url-loader": "^0.6.2",
     "vue": "^2.5.13",
     "vue-loader": "^13.6.2",
+    "vue-peity": "^0.5.0",
+    "vue-seamless-scroll": "^1.1.12",
     "vue-template-compiler": "^2.5.13",
     "webpack": "^3.10.0",
     "webpack-stream": "^4.0.0"
