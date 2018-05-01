@@ -1,5 +1,28 @@
-var normalStock = {
-  sh: ['600', '601'],
+const colWidth = {
+  init: 90,
+  curPrice: 50,
+  range: 70,
+  rangePrice: 70,
+  profit: 50,
+  cost: 50,
+  count: 50,
+  upLimit: 50,
+  downLimit: 50,
+  toPrice: 45,
+  highPrice: 45,
+  lowPrice: 45,
+  chart: 60,
+  set: 145
+}
+
+export const MIN_STOCKWIDTH_WITH_SET = 520;
+
+export function getColWidth(col) {
+  return colWidth[col]
+}
+
+const normalCode = {
+  sh: ['600', '601','603'],
   sz: ['000'],
   ms: ['002'],
   cy: ['300'],
@@ -10,43 +33,25 @@ var normalStock = {
   shP: ['700'],
   szP: ['080']
 };
-var normalStockArr = (function() {
+
+var normalCodeArr = (() =>{
   var tempArr = [];
-  for (let key in normalStock) {
-    tempArr = tempArr.concat(normalStock[key]);
+  for (let k in normalCode) {
+    tempArr = [...tempArr, ...normalCode[k]]
   }
   return tempArr;
 })();
 
-export function check(shock) {
-  var firstStock = shock.slice(0, 3);
-  var isNormal = false;
-  for (var i = 0; i < normalStockArr.length; i++) {
-    if (firstStock == normalStockArr[i]) {
-      isNormal = true;
-    }
-  }
-  return isNormal;
+export function checkAllow(shortCode) {
+  return normalCodeArr.includes(shortCode.slice(0, 3))
 }
 
-export function getRightShock(shock) {
-  console.log(shock);
-
-  var firstStock = shock.slice(0, 3);
-  var shArr = normalStock['sh'].concat(
-    normalStock['shB'],
-    normalStock['shN'],
-    normalStock['shP']
-	);
-  console.log(shArr);
-	
-  for (let i = 0; i < shArr.length; i++) {
-    const element = shArr[i];
-    if (element == firstStock) {
-      return 'sh' + shock;
-    }
-	}
-	
-  return 'sz' + shock;
+export function getFixedNum(num, digit = 2) {
+  if (num) {
+    return Number(Number(num).toFixed(digit));
+  }
+  if (num === 0) {
+    return num
+  }
 }
 

