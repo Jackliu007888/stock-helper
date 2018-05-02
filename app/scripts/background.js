@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 104);
+/******/ 	return __webpack_require__(__webpack_require__.s = 103);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -376,7 +376,8 @@ module.exports = {
 /***/ }),
 /* 1 */,
 /* 2 */,
-/* 3 */
+/* 3 */,
+/* 4 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -566,7 +567,6 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 4 */,
 /* 5 */,
 /* 6 */,
 /* 7 */
@@ -666,7 +666,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 8 */,
@@ -880,7 +880,7 @@ module.exports = function xhrAdapter(config) {
   });
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 18 */
@@ -948,8 +948,7 @@ module.exports = Cancel;
 /***/ }),
 /* 21 */,
 /* 22 */,
-/* 23 */,
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1024,6 +1023,7 @@ function getFixedNum(num) {
 }
 
 /***/ }),
+/* 24 */,
 /* 25 */,
 /* 26 */,
 /* 27 */,
@@ -1990,7 +1990,7 @@ exports.getAnnouncementDetail = getAnnouncementDetail;
 exports.getStockDetail = getStockDetail;
 exports.getSuggestList = getSuggestList;
 
-var _base = __webpack_require__(24);
+var _base = __webpack_require__(23);
 
 function getStockTradeDetail(res) {
   // console.log(res)
@@ -2169,8 +2169,7 @@ function getSuggestList(res) {
 /* 100 */,
 /* 101 */,
 /* 102 */,
-/* 103 */,
-/* 104 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2314,7 +2313,7 @@ var StockData = function () {
             notifiedTime = _baseObj2$notifiedTim === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _baseObj2$notifiedTim;
 
         (0, _api.getStockByCode)(code).then(function (res) {
-          var stockObj = (0, _former.getStockDetail)(res, code, cost, count, upLimit, downLimit);
+          var stockObj = (0, _former.getStockDetail)({ res: res, code: code, cost: cost, count: count, upLimit: upLimit, downLimit: downLimit });
           console.log(stockObj);
           resolve(stockObj);
         });
