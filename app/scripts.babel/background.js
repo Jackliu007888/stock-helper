@@ -113,7 +113,7 @@ class StockData {
         notifiedTime = new Date().getTime() - 13 * 60 * 60 * 1000
       } = this.baseObj
       getStockByCode(code).then(res => {
-        var stockObj = getStockDetail({ res, code, cost, count, upLimit, downLimit });
+        var stockObj = getStockDetail({res, code, cost, count, upLimit, downLimit});
         console.log(stockObj)
         resolve(stockObj)
       })
