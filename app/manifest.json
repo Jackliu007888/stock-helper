@@ -1,6 +1,6 @@
 {
   "name": "__MSG_appName__",
-  "version": "1.5.0",
+  "version": "1.5.2",
   "manifest_version": 2,
   "update_url": "http://www.example.com/update.xml",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
@@ -19,7 +19,7 @@
   },
   "permissions": [
     "notifications",
-    "http://hq.sinajs.cn/list=*",
+    "https://hq.sinajs.cn/list=*",
     "http://suggest3.sinajs.cn/suggest/",
     "http://vip.stock.finance.sina.com.cn/quotes_service/view/"
   ],

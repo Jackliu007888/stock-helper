@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const url = 'http://hq.sinajs.cn/'
+const url = 'https://hq.sinajs.cn/'
 
 export function getStockByCode(code) {
   return axios.get(`${url}list=${code}`).then(res => {
