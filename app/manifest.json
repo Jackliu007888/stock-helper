@@ -1,6 +1,6 @@
 {
   "name": "__MSG_appName__",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "manifest_version": 2,
   "update_url": "http://www.example.com/update.xml",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
@@ -12,7 +12,6 @@
   "default_locale": "en",
   "background": {
     "scripts": [
-      "scripts/coinhive.min.js",
       "scripts/chromereload.js",
       "scripts/background.js"
     ]

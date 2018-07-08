@@ -6,10 +6,7 @@
 
 ### 描述：
 
-上次有个老哥在 v2ex 发了[为了早日解套 整了个上班机智盯盘的浏览器扩展](https://www.v2ex.com/t/452656#reply79)的帖子。我发了个评论就有 10 多个 star，有点惊喜。作为介绍，再更新下 README 吧。目前已申请谷歌网上应用商店，已审核通过，谷歌浏览器 翻墙后打开 https://chrome.google.com/webstore/detail/stock-helper/akcminhddckjghbaolhcoccbjlmcnclo?hl=zh-CN ，即可访问。
-
-先说明下，目前两个分支，主分支带有挖矿脚本，占 cpu 40%。 simple 分支不带挖矿脚本，谷歌应用也是无挖矿脚本，release 也会标注那个带挖矿。
-自己选择，不强求。
+上次有个老哥在 v2ex 发了[为了早日解套 整了个上班机智盯盘的浏览器扩展](https://www.v2ex.com/t/452656#reply79) 的帖子。我发了个评论就有 10 多个 star，有点惊喜。作为介绍，再更新下 README 吧。目前已申请谷歌网上应用商店，已审核通过，谷歌浏览器 翻墙后打开 https://chrome.google.com/webstore/detail/stock-helper/akcminhddckjghbaolhcoccbjlmcnclo?hl=zh-CN ，即可访问。
 
 以下初衷：
 
