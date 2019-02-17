@@ -1,8 +1,8 @@
 ## a chrome extension for Chinese stocks / A 股股票助手--谷歌浏览器插件
 
-![stock-01](http://oqzceoiaz.bkt.clouddn.com/stock-helper.png)
-![stock-02](http://oqzceoiaz.bkt.clouddn.com/stock-show.png)
-![stock-03](http://oqzceoiaz.bkt.clouddn.com/stock-up.png)
+![stock-01](http://oqzceoiaz.dddog.com.cn/stock-helper.png)
+![stock-02](http://oqzceoiaz.dddog.com.cn/stock-show.png)
+![stock-03](http://oqzceoiaz.dddog.com.cn/stock-up.png)
 
 ### 描述：
 
@@ -51,4 +51,4 @@ add ./app to chrome extensions / 在谷歌浏览器打开开发者模式,添加/
 
 若您在股市赚钱了，可以给我来杯咖啡 :）
 
-![award](http://oqzceoiaz.bkt.clouddn.com/award.jpg)
+![award](http://oqzceoiaz.dddog.com.cn/award.jpg)

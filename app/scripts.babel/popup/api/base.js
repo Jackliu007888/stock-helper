@@ -17,12 +17,10 @@ const colWidth = {
 
 export const MIN_STOCKWIDTH_WITH_SET = 520;
 
-export function getColWidth(col) {
-  return colWidth[col]
-}
+export const getColWidth = col => colWidth[col]
 
 const normalCode = {
-  sh: ['600', '601','603'],
+  sh: ['600', '601', '603'],
   sz: ['000'],
   ms: ['002'],
   cy: ['300'],
@@ -34,24 +32,20 @@ const normalCode = {
   szP: ['080']
 };
 
-var normalCodeArr = (() =>{
-  var tempArr = [];
-  for (let k in normalCode) {
-    tempArr = [...tempArr, ...normalCode[k]]
-  }
-  return tempArr;
-})();
 
-export function checkAllow(shortCode) {
+/**
+ * 根据股票代码前三位数字判断股票是否合法
+ * @params {string} shortcode
+ * @return {boolean}
+ */
+export function checkAllow (shortCode) {
+  let normalCodeArr = []
+  Object.values(normalCode).forEach(d => {
+    normalCodeArr = [...normalCodeArr, ...d]
+  })
   return normalCodeArr.includes(shortCode.slice(0, 3))
 }
 
-export function getFixedNum(num, digit = 2) {
-  if (num) {
-    return Number(Number(num).toFixed(digit));
-  }
-  if (num === 0) {
-    return num
-  }
+export const getFixedNum = (num, digit = 2) => {
+  return num ? Number(Number(num).toFixed(digit)) : num
 }
-

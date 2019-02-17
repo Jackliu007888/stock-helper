@@ -23,14 +23,10 @@ function showBrowserAction(msg = '') {
   });
 }
 
-
-
 // 主程序调用
 setInterval(() => {
   process.runCheckCode()
 }, 3 * 60 * 1000)
-
-
 
 var process = {
   runCheckCode() {
@@ -146,7 +142,7 @@ class MsgBox {
         icon: this.icon,
         body: this.msgBody
       });
-      notification.onclick =  ()=> {
+      notification.onclick = () => {
         window.open(this.url);
       };
     }

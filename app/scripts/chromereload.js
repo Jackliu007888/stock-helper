@@ -60,12 +60,12 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 105);
+/******/ 	return __webpack_require__(__webpack_require__.s = 100);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 105:
+/***/ 100:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -97,7 +97,9 @@ connection.onmessage = function (e) {
       if (lastReload && currentTime - lastReload > 60000) {
         // don't reload more than once a minute
         chrome.runtime.reload();
-        chrome.developerPrivate.reload(chrome.runtime.id, { failQuietly: true });
+        chrome.developerPrivate.reload(chrome.runtime.id, {
+          failQuietly: true
+        });
       }
     }
   }

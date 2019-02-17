@@ -10,9 +10,9 @@ const connection = new WebSocket('ws://' + LIVERELOAD_HOST + LIVERELOAD_PORT + '
 
 var lastReload = false;
 
-chrome.runtime.onInstalled.addListener(function(details) {
+chrome.runtime.onInstalled.addListener(function (details) {
   lastReload = Date.now();
-});    
+});
 
 connection.onerror = error => {
   console.log('reload connection got error:', error);
@@ -24,12 +24,12 @@ connection.onmessage = e => {
     if (data && data.command === 'reload') {
       var currentTime = Date.now();
       if (lastReload && currentTime - lastReload > 60000) {
-	// don't reload more than once a minute
-	chrome.runtime.reload();
-	chrome.developerPrivate.reload(chrome.runtime.id, 
-				       {failQuietly: true});
+        // don't reload more than once a minute
+        chrome.runtime.reload();
+        chrome.developerPrivate.reload(chrome.runtime.id, {
+          failQuietly: true
+        });
       }
     }
   }
 };
-

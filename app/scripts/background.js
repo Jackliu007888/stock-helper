@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 104);
+/******/ 	return __webpack_require__(__webpack_require__.s = 99);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,7 +71,7 @@
 
 
 var bind = __webpack_require__(16);
-var isBuffer = __webpack_require__(35);
+var isBuffer = __webpack_require__(36);
 
 /*global toString:true*/
 
@@ -376,7 +376,8 @@ module.exports = {
 /***/ }),
 /* 1 */,
 /* 2 */,
-/* 3 */
+/* 3 */,
+/* 4 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -566,7 +567,6 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 4 */,
 /* 5 */,
 /* 6 */,
 /* 7 */
@@ -576,7 +576,7 @@ process.umask = function() { return 0; };
 /* WEBPACK VAR INJECTION */(function(process) {
 
 var utils = __webpack_require__(0);
-var normalizeHeaderName = __webpack_require__(37);
+var normalizeHeaderName = __webpack_require__(38);
 
 var DEFAULT_CONTENT_TYPE = {
   'Content-Type': 'application/x-www-form-urlencoded'
@@ -638,6 +638,10 @@ var defaults = {
     return data;
   }],
 
+  /**
+   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+   * timeout is not created.
+   */
   timeout: 0,
 
   xsrfCookieName: 'XSRF-TOKEN',
@@ -666,7 +670,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 8 */,
@@ -702,12 +706,12 @@ module.exports = function bind(fn, thisArg) {
 /* WEBPACK VAR INJECTION */(function(process) {
 
 var utils = __webpack_require__(0);
-var settle = __webpack_require__(38);
-var buildURL = __webpack_require__(40);
-var parseHeaders = __webpack_require__(41);
-var isURLSameOrigin = __webpack_require__(42);
+var settle = __webpack_require__(39);
+var buildURL = __webpack_require__(41);
+var parseHeaders = __webpack_require__(42);
+var isURLSameOrigin = __webpack_require__(43);
 var createError = __webpack_require__(18);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(43);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(44);
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -804,7 +808,7 @@ module.exports = function xhrAdapter(config) {
     // This is only done if running in a standard browser environment.
     // Specifically not if we're in a web worker, or react-native.
     if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(44);
+      var cookies = __webpack_require__(45);
 
       // Add xsrf header
       var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -880,7 +884,7 @@ module.exports = function xhrAdapter(config) {
   });
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 18 */
@@ -889,7 +893,7 @@ module.exports = function xhrAdapter(config) {
 "use strict";
 
 
-var enhanceError = __webpack_require__(39);
+var enhanceError = __webpack_require__(40);
 
 /**
  * Create an Error with the specified message, config, error code, request and response.
@@ -946,10 +950,7 @@ module.exports = Cancel;
 
 
 /***/ }),
-/* 21 */,
-/* 22 */,
-/* 23 */,
-/* 24 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -958,9 +959,7 @@ module.exports = Cancel;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getColWidth = getColWidth;
 exports.checkAllow = checkAllow;
-exports.getFixedNum = getFixedNum;
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -983,9 +982,9 @@ var colWidth = {
 
 var MIN_STOCKWIDTH_WITH_SET = exports.MIN_STOCKWIDTH_WITH_SET = 520;
 
-function getColWidth(col) {
+var getColWidth = exports.getColWidth = function getColWidth(col) {
   return colWidth[col];
-}
+};
 
 var normalCode = {
   sh: ['600', '601', '603'],
@@ -1000,30 +999,29 @@ var normalCode = {
   szP: ['080']
 };
 
-var normalCodeArr = function () {
-  var tempArr = [];
-  for (var k in normalCode) {
-    tempArr = [].concat(_toConsumableArray(tempArr), _toConsumableArray(normalCode[k]));
-  }
-  return tempArr;
-}();
-
+/**
+ * 根据股票代码前三位数字判断股票是否合法
+ * @params {string} shortcode
+ * @return {boolean}
+ */
 function checkAllow(shortCode) {
+  var normalCodeArr = [];
+  Object.values(normalCode).forEach(function (d) {
+    normalCodeArr = [].concat(_toConsumableArray(normalCodeArr), _toConsumableArray(d));
+  });
   return normalCodeArr.includes(shortCode.slice(0, 3));
 }
 
-function getFixedNum(num) {
+var getFixedNum = exports.getFixedNum = function getFixedNum(num) {
   var digit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
 
-  if (num) {
-    return Number(Number(num).toFixed(digit));
-  }
-  if (num === 0) {
-    return num;
-  }
-}
+  return num ? Number(Number(num).toFixed(digit)) : num;
+};
 
 /***/ }),
+/* 22 */,
+/* 23 */,
+/* 24 */,
 /* 25 */,
 /* 26 */,
 /* 27 */,
@@ -1031,7 +1029,8 @@ function getFixedNum(num) {
 /* 29 */,
 /* 30 */,
 /* 31 */,
-/* 32 */
+/* 32 */,
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1045,7 +1044,7 @@ exports.getStockBySuggest = getStockBySuggest;
 exports.getStockTrade = getStockTrade;
 exports.getAnnouncement = getAnnouncement;
 
-var _axios = __webpack_require__(33);
+var _axios = __webpack_require__(34);
 
 var _axios2 = _interopRequireDefault(_axios);
 
@@ -1086,13 +1085,13 @@ function getAnnouncement(limit) {
 }
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(34);
+module.exports = __webpack_require__(35);
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1100,7 +1099,7 @@ module.exports = __webpack_require__(34);
 
 var utils = __webpack_require__(0);
 var bind = __webpack_require__(16);
-var Axios = __webpack_require__(36);
+var Axios = __webpack_require__(37);
 var defaults = __webpack_require__(7);
 
 /**
@@ -1135,14 +1134,14 @@ axios.create = function create(instanceConfig) {
 
 // Expose Cancel & CancelToken
 axios.Cancel = __webpack_require__(20);
-axios.CancelToken = __webpack_require__(50);
+axios.CancelToken = __webpack_require__(51);
 axios.isCancel = __webpack_require__(19);
 
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
-axios.spread = __webpack_require__(51);
+axios.spread = __webpack_require__(52);
 
 module.exports = axios;
 
@@ -1151,7 +1150,7 @@ module.exports.default = axios;
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports) {
 
 /*!
@@ -1178,7 +1177,7 @@ function isSlowBuffer (obj) {
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1186,8 +1185,8 @@ function isSlowBuffer (obj) {
 
 var defaults = __webpack_require__(7);
 var utils = __webpack_require__(0);
-var InterceptorManager = __webpack_require__(45);
-var dispatchRequest = __webpack_require__(46);
+var InterceptorManager = __webpack_require__(46);
+var dispatchRequest = __webpack_require__(47);
 
 /**
  * Create a new instance of Axios
@@ -1216,7 +1215,7 @@ Axios.prototype.request = function request(config) {
     }, arguments[1]);
   }
 
-  config = utils.merge(defaults, this.defaults, { method: 'get' }, config);
+  config = utils.merge(defaults, {method: 'get'}, this.defaults, config);
   config.method = config.method.toLowerCase();
 
   // Hook up interceptors middleware
@@ -1264,7 +1263,7 @@ module.exports = Axios;
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1283,7 +1282,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1316,7 +1315,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1344,7 +1343,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1391,9 +1390,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
       if (utils.isArray(val)) {
         key = key + '[]';
-      }
-
-      if (!utils.isArray(val)) {
+      } else {
         val = [val];
       }
 
@@ -1419,7 +1416,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1479,7 +1476,7 @@ module.exports = function parseHeaders(headers) {
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1554,7 +1551,7 @@ module.exports = (
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1597,7 +1594,7 @@ module.exports = btoa;
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1657,7 +1654,7 @@ module.exports = (
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1716,18 +1713,18 @@ module.exports = InterceptorManager;
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var transformData = __webpack_require__(47);
+var transformData = __webpack_require__(48);
 var isCancel = __webpack_require__(19);
 var defaults = __webpack_require__(7);
-var isAbsoluteURL = __webpack_require__(48);
-var combineURLs = __webpack_require__(49);
+var isAbsoluteURL = __webpack_require__(49);
+var combineURLs = __webpack_require__(50);
 
 /**
  * Throws a `Cancel` if cancellation has been requested.
@@ -1809,7 +1806,7 @@ module.exports = function dispatchRequest(config) {
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1836,7 +1833,7 @@ module.exports = function transformData(data, headers, fns) {
 
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1857,7 +1854,7 @@ module.exports = function isAbsoluteURL(url) {
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1878,7 +1875,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1942,7 +1939,7 @@ module.exports = CancelToken;
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1976,7 +1973,7 @@ module.exports = function spread(callback) {
 
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1985,65 +1982,66 @@ module.exports = function spread(callback) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getStockDetail = exports.getAnnouncementDetail = undefined;
 exports.getStockTradeDetail = getStockTradeDetail;
-exports.getAnnouncementDetail = getAnnouncementDetail;
-exports.getStockDetail = getStockDetail;
 exports.getSuggestList = getSuggestList;
 
-var _base = __webpack_require__(24);
+var _base = __webpack_require__(21);
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function getStockTradeDetail(res) {
-  // console.log(res)
+  var tradeItemList = [];
   try {
-    var trade_item_list = eval('(function() {\n      ' + res + '\n      return trade_item_list\n    })()');
+    tradeItemList = eval('(function() {\n      ' + res + '\n      return tradeItemList\n    })()');
   } catch (e) {
-    console.log('error');
-    console.log(e.toString());
+    console.error('getStockTradeDetail error', e.toString());
   }
 
-  trade_item_list = trade_item_list.filter(function (item, index) {
+  tradeItemList = tradeItemList.filter(function (item, index) {
     return parseInt(item[2]) > 0;
   });
 
   // 筛选100量级数据
-  var lenTimes = trade_item_list.length > 100 ? parseInt(trade_item_list.length / 100) : 1;
-  trade_item_list = trade_item_list.filter(function (item, index) {
-    return index % lenTimes == 0;
+  var lenTimes = tradeItemList.length > 100 ? parseInt(tradeItemList.length / 100) : 1;
+  tradeItemList = tradeItemList.filter(function (item, index) {
+    return index % lenTimes === 0;
   });
 
   // 反转数组
-  var revList = trade_item_list.reverse();
-  var resultList = [];
-  for (var i = 0; i < revList.length; i++) {
-    var element = revList[i][2];
-    resultList.push(element);
-  }
+  var revList = tradeItemList.reverse();
+  var resultList = revList.map(function (d) {
+    return d[2];
+  });
 
   // 放大趋势，适应peity
-  var minVal = Math.min.apply(Math, resultList);
-  var maxVal = Math.max.apply(Math, resultList);
+  var minVal = Math.min.apply(Math, _toConsumableArray(resultList));
+  var maxVal = Math.max.apply(Math, _toConsumableArray(resultList));
   var times = 10 / (maxVal - minVal);
   var mapResult = resultList.map(function (item, index, array) {
     return (item - minVal) * times;
   });
   // 空数组返回 20个0 的数组
-  return +mapResult === 0 ? Array.from({ length: 20 }, function (v, k) {
-    return 0;
-  }) : mapResult;
+  return +mapResult === 0 ? new Array(20).fill(0) : mapResult;
 }
 
-function getAnnouncementDetail(res) {
-  var result = new Array();
-  res['data']['a_stock']['items'].forEach(function (val, idx) {
-    result.push({
-      content: val['content_text'],
-      time: val['display_time']
-    });
+var getAnnouncementDetail = exports.getAnnouncementDetail = function getAnnouncementDetail(res) {
+  return res['data']['a_stock']['items'].map(function (item) {
+    return {
+      content: item['content_text'],
+      time: item['display_time']
+    };
   });
-  return result;
-}
+};
 
-function getStockDetail(_ref) {
+/**
+ * 股票数据清洗
+ * @param {*} param0 
+ * @returns {}
+ */
+var getStockDetail = exports.getStockDetail = function getStockDetail(_ref) {
   var res = _ref.res,
       code = _ref.code,
       _ref$cost = _ref.cost,
@@ -2051,75 +2049,68 @@ function getStockDetail(_ref) {
       _ref$count = _ref.count,
       count = _ref$count === undefined ? 0 : _ref$count;
 
+
   var result = res.split('=')[1];
   if (result.length <= 10) {
-    console.log('no result');
-    return;
+    return null;
   }
+
   var itemArr = result.split('"')[1].split(',');
-  var name = itemArr[0],
-      toPrice = (0, _base.getFixedNum)(itemArr[1]),
-      // 今开
-  yesPrice = (0, _base.getFixedNum)(itemArr[2]),
-      // 昨收
-  curPrice = (0, _base.getFixedNum)(itemArr[3]),
-      // 当前价
-  highPrice = (0, _base.getFixedNum)(itemArr[4]),
-      // 最高
-  // lowPrice = getFixedNum(itemArr[5]), // 未知
-  // lowPrice = getFixedNum(itemArr[6]), // 未知
-  lowPrice = (0, _base.getFixedNum)(itemArr[7]),
-      // 最低
-  date = itemArr[itemArr.length - 3],
-      // 日期
-  time = itemArr[itemArr.length - 2]; // 时间
-  // console.log(itemArr)
-  var rangePrice = curPrice == 0 ? 0 : (0, _base.getFixedNum)(curPrice - yesPrice);
-  var range = curPrice == 0 ? 0 : (0, _base.getFixedNum)((curPrice - yesPrice) / yesPrice * 100);
-  cost = (0, _base.getFixedNum)(cost, 3);
+
+  var _itemArr = _toArray(itemArr),
+      name = _itemArr[0],
+      toPrice = _itemArr[1],
+      yesPrice = _itemArr[2],
+      curPrice = _itemArr[3],
+      highPrice = _itemArr[4],
+      unkonwnA = _itemArr[5],
+      unkonwnB = _itemArr[6],
+      lowPrice = _itemArr[7],
+      leftArr = _itemArr.slice(8);
+
+  var _ref2 = [leftArr[leftArr.length - 3], leftArr[leftArr.length - 2]],
+      date = _ref2[0],
+      time = _ref2[1]; // 日期 、 时间
+
+  var rangePrice = +curPrice === 0 ? 0 : (0, _base.getFixedNum)(curPrice - yesPrice);
+  var range = +rangePrice === 0 ? 0 : (0, _base.getFixedNum)(rangePrice / yesPrice * 100);
   var profit = curPrice === 0 || cost === 0 ? 0 : (0, _base.getFixedNum)((curPrice - cost) * count, 3);
 
-  var stockObj = {
+  return {
     code: code,
     name: name,
-    toPrice: toPrice,
-    yesPrice: yesPrice,
-    curPrice: curPrice,
-    highPrice: highPrice,
-    lowPrice: lowPrice,
     rangePrice: rangePrice,
     range: range,
     date: date,
     time: time,
-    cost: cost,
     count: count,
-    profit: profit
+    profit: profit,
+    toPrice: (0, _base.getFixedNum)(toPrice),
+    yesPrice: (0, _base.getFixedNum)(yesPrice),
+    curPrice: (0, _base.getFixedNum)(curPrice),
+    highPrice: (0, _base.getFixedNum)(highPrice),
+    lowPrice: (0, _base.getFixedNum)(lowPrice),
+    cost: (0, _base.getFixedNum)(cost, 3)
   };
-  return stockObj;
-}
+};
 
 function getSuggestList(res) {
   var result = res.split('=')[1];
-  if (result.length <= 10) {
-    console.log('no result suggest');
-    return [];
-  }
+
+  if (result.length <= 10) return [];
+
   var itemArr = result.split('"')[1].split(';');
-  var newArr = [];
-  for (var i = 0; i < itemArr.length; i++) {
-    var element = itemArr[i];
-    var detailArr = element.split(',');
-    var name = detailArr[4];
-    var code = detailArr[3];
-    newArr.push({
-      value: name + '-' + code
-    });
-  }
-  return newArr;
+
+  return itemArr.map(function (item) {
+    var splitArr = item.split(',');
+
+    return {
+      value: splitArr[4] + '-' + splitArr[3]
+    };
+  });
 }
 
 /***/ }),
-/* 53 */,
 /* 54 */,
 /* 55 */,
 /* 56 */,
@@ -2165,12 +2156,7 @@ function getSuggestList(res) {
 /* 96 */,
 /* 97 */,
 /* 98 */,
-/* 99 */,
-/* 100 */,
-/* 101 */,
-/* 102 */,
-/* 103 */,
-/* 104 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2178,9 +2164,9 @@ function getSuggestList(res) {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _api = __webpack_require__(32);
+var _api = __webpack_require__(33);
 
-var _former = __webpack_require__(52);
+var _former = __webpack_require__(53);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 

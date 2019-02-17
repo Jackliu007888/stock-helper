@@ -1,0 +1,24 @@
+.seamless-warp {
+  overflow: hidden;
+  height: 25px;
+}
+
+.seamless-warp ul {
+  width: 99999px;
+}
+
+.seamless-warp ul li {
+  float: left;
+  list-style: none;
+  margin-right: 10px;
+}
+
+.seamless-warp ul li span {
+  display: inline-block;
+  margin-top: -10px;
+}
+
+.seamless-warp ul img {
+  height: 18px;
+  overflow: hidden;
+}

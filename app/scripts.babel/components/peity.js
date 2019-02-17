@@ -1,8 +1,3 @@
-<template>
-  <div class="peity"><span ref="span"></span></div>
-</template>
-
-<script>
 import Peity from './lib/peity'
 
 const types = ['line', 'bar', 'pie', 'donut']
@@ -43,6 +38,10 @@ export default {
   },
   beforeDestroy () {
     this.chart.destroy()
+  },
+  render(h) {
+    return (
+      <div class="peity"><span ref="span"></span></div>
+    )
   }
 }
-</script>
