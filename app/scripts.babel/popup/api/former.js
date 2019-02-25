@@ -7,7 +7,7 @@ export function getStockTradeDetail (res) {
   try {
     tradeItemList = eval(`(function() {
       ${res}
-      return tradeItemList
+      return trade_item_list
     })()`)
   } catch (e) {
     console.error('getStockTradeDetail error' , e.toString())
@@ -16,7 +16,6 @@ export function getStockTradeDetail (res) {
   tradeItemList = tradeItemList.filter((item, index) => {
     return parseInt(item[2]) > 0
   })
-
   // 筛选100量级数据
   const lenTimes = tradeItemList.length > 100 ? parseInt(tradeItemList.length / 100) : 1
   tradeItemList = tradeItemList.filter((item, index) => {

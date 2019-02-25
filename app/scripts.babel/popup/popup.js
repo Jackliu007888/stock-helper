@@ -30,18 +30,19 @@ const LoadingContent = {
   render (h, context) {
     return (
       <div class="loading" >
-        <span>{context.data.scopedSlots.default({})}</span>
+        <span>{context.scopedSlots.default({})}</span>
       </div>
     )
   }
 }
 
 const NavigationLink = {
+  name: 'navigation-link',
   functional: true,
   render (h, context) {
     return (
-      <a href={context.props.url} target="_blank" class="nav-link">
-        {context.data.scopedSlots.default({})}
+      <a href={context.props.url} target="_blank" class="nav-link" {...context.props}>
+        {context.scopedSlots.default({})}
       </a>
     )
   } 
@@ -53,100 +54,13 @@ const MainContent = {
   props: [
     'sortStocks',
     'setModeChecked',
-    'colList'
+    'colList',
+    'localStocks',
+    'editInput'
   ],
   components: {
     NavigationLink,
     Peity
-  },
-  slots: {
-    nameSlot: {
-      default: scope => (
-        <navigation-link url={getFinanceSinaUrlByCode(scope.row.code)}>
-          {scope.row.name}
-          <span class='stock-code'>{scope.row.code}</span>
-        </navigation-link>
-      )
-    },
-    costSlot: {
-      default: scope => {
-        if (scope.row.edit) return <span>{scope.row.cost}</span>
-
-        return (
-          <el-input
-            data-name="cost"
-            value={this.localStock[scope.$index].cost}
-            onInput={this.handleEidtChange}
-            size="mini" />
-        )
-      }
-    },
-    countSlot: {
-      default: scope => {
-        if (scope.row.edit) return <span>{scope.row.count}</span>
-
-        return (
-          <el-input
-            data-name="count"
-            value={this.localStock[scope.$index].count}
-            onInput={this.handleEidtChange}
-            size="mini" />
-        )
-      }
-    },
-    upLimitSlot: {
-      default: scope => {
-        if (scope.row.edit) return <span>{scope.row.upLimit}</span>
-
-        return (
-          <el-input
-            data-name="upLimit"
-            value={this.localStock[scope.$index].upLimit}
-            onInput={this.handleEidtChange}
-            size="mini" />
-        )
-      }
-    },
-    downLimitSlot: {
-      default: scope => {
-        if (scope.row.edit) return <span>{scope.row.downLimit}</span>
-
-        return (
-          <el-input
-            data-name="downLimit"
-            value={this.localStock[scope.$index].downLimit}
-            onInput={this.handleEidtChange}
-            size="mini" />
-        )
-      }
-    },
-    chartSlot: {
-      default: scope => {
-        const setPeity = {
-          type: 'line',
-          options: {
-            stroke: '#3ca316',
-            width: 60,
-            height: 20
-          }
-        }
-        if (scope.row.lineData.length) {
-          <peity type={setPeity.type} options={setPeity.options} data={scope.row.lineData}></peity>
-        }
-      }
-    },
-    operatingSlot: {
-      default: scope => {
-        return [
-          <el-button onClick={this.handleClickEditRowBtn} data-index={scope.$index} type="text" size="mini">
-            { scope.row.edit ? '完成' : '编辑' }
-          </el-button>,
-          <el-button onClick={this.handleClickDeleteRowBtn} data-index={scope.$index} type="text" size="mini">
-            移除
-          </el-button>
-        ]
-      }
-    }
   },
   methods: {
     cellClassName(rows, columns, rowIndex, columnIndex) {
@@ -159,16 +73,128 @@ const MainContent = {
 				? row[column['property']].toFixed(2)
 				: '0'
     },
-    handleEidtChange () {
-
+    handleEidtChange({name}) {
+      return value => {
+        this.$emit('editChange', {
+          name,
+          value
+        })
+      }
     },
     clearSort() {
       this.$refs.stockTable.clearSort()
+    },
+    handleClickEditRowBtn(e) {
+      const { code } = e.currentTarget.dataset
+      this.$emit('editRow', code)
+    },
+    handleClickDeleteRowBtn(e) {
+      const { code } = e.currentTarget.dataset
+      this.$emit('deleteRow', code)
+    },
+    handleMoveUp(e) {
+      const { index } = e.currentTarget.dataset
+      this.$emit('moveUp', index)
+    },
+    handleMoveDown(e) {
+      const { index } = e.currentTarget.dataset
+      this.$emit('moveDown', index)
     }
   },
   render(h) {
     const shouldRender = name => this.colList.includes(name) && !this.setModeChecked
+    const setModeCheckedShouldRender = name => this.colList.includes(name) || this.setModeChecked
 
+    const nameSlot ={
+      default: (scope) => (
+        <navigation-link url={getFinanceSinaUrlByCode(scope.row.code)}>
+          {scope.row.name}
+          <span class='stock-code'>{scope.row.code}</span>
+        </navigation-link>
+      )
+    }
+    const costSlot = {
+      default: scope => {
+        if (!scope.row.edit) return <span>{scope.row.cost}</span>
+  
+        return (
+          <el-input
+            data-name="cost"
+            value={this.editInput.cost}
+            onInput={this.handleEidtChange({name: 'cost'})}
+            size="mini" />
+        )
+      }
+    }
+    const countSlot = {
+      default: scope => {
+        if (!scope.row.edit) return <span>{scope.row.count}</span>
+  
+        return (
+          <el-input
+            value={this.editInput.count}
+            onInput={this.handleEidtChange({name: 'count'})}
+            size="mini" />
+        )
+      }
+    }
+    const upLimitSlot = {
+      default: scope => {
+        if (!scope.row.edit) return <span>{scope.row.upLimit}</span>
+  
+        return (
+          <el-input
+            value={this.editInput.upLimit}
+            onInput={this.handleEidtChange({name: 'upLimit'})}
+            size="mini" />
+        )
+      }
+    }
+    const downLimitSlot = {
+      default: scope => {
+        if (!scope.row.edit) return <span>{scope.row.downLimit}</span>
+  
+        return (
+          <el-input
+            value={this.editInput.downLimit}
+            onInput={this.handleEidtChange({name: 'downLimit'})}
+            size="mini" />
+        )
+      }
+    }
+    const chartSlot = {
+      default: scope => {
+        const setPeity = {
+          type: 'line',
+          options: {
+            stroke: '#3ca316',
+            width: 60,
+            height: 20
+          }
+        }
+        if (scope.row.lineData.length) {
+          return <peity type={setPeity.type} options={setPeity.options} data={scope.row.lineData}></peity>
+        }
+      }
+    }
+    const operatingSlot = {
+      default: scope => {
+        return [
+          <el-button onClick={this.handleMoveUp} data-index={scope.$index} disabled={scope.$index === 0} type="text" size="mini">
+            上移
+          </el-button>,
+          <el-button onClick={this.handleMoveDown} data-index={scope.$index} disabled={scope.$index + 1 === Object.keys(this.localStocks).length} type="text" size="mini">
+            下移
+          </el-button>,
+          <el-button onClick={this.handleClickEditRowBtn} data-code={scope.row.code} type="text" size="mini">
+            { scope.row.edit ? '完成' : '编辑' }
+          </el-button>,
+          <el-button onClick={this.handleClickDeleteRowBtn} data-code={scope.row.code} type="text" size="mini">
+            移除
+          </el-button>
+        ]
+      }
+    }
     return (
       < div class="header-line" >
         <el-table
@@ -179,58 +205,58 @@ const MainContent = {
           style="width: 100%"
           cell-class-name={this.cellClassName}
           ref="stockTable">
-          <el-table-column label="股票" scopedSlots={this.$options.slots.nameSlot} />
-          <el-table-column width="50" prop="curPrice" label="现价" formatter={this.formatterFixedTwo} sortable={!this.setModeChecked} />
-          <el-table-column width="70" prop="range" label="涨跌幅" formatter={this.formatter} sortable={!this.setModeChecked} />>
-          <el-table-column width="70" prop="rangePrice" label="涨跌额" formatter={this.formatterFixedTwo} sortable={!this.setModeChecked} />
+          <el-table-column key='股票'  label="股票" scopedSlots={nameSlot} />
+          <el-table-column key='现价' width="50" prop="curPrice" label="现价" formatter={this.formatterFixedTwo} sortable={!this.setModeChecked} />
+          <el-table-column key='涨跌幅' width="70" prop="range" label="涨跌幅" formatter={this.formatter} sortable={!this.setModeChecked} />>
+          <el-table-column key='涨跌额' width="70" prop="rangePrice" label="涨跌额" formatter={this.formatterFixedTwo} sortable={!this.setModeChecked} />
           {
             shouldRender('toPrice') && (
-              <el-table-column width="45" prop="toPrice" label="今开" formatter={this.formatterFixedTwo}  />
+              <el-table-column key='今开' width="45" prop="toPrice" label="今开" formatter={this.formatterFixedTwo}  />
             )
           }
           {
             shouldRender('highPrice') && (
-              <el-table-column width="45" prop="highPrice" label="最高" formatter={this.formatterFixedTwo}  />
+              <el-table-column key='最高' width="45" prop="highPrice" label="最高" formatter={this.formatterFixedTwo}  />
             )
           }
           {
             shouldRender('lowPrice') && (
-              <el-table-column width="45" prop="lowPrice" label="最低" formatter={this.formatterFixedTwo}  />
+              <el-table-column key='最低' width="45" prop="lowPrice" label="最低" formatter={this.formatterFixedTwo}  />
             )
           }
           {
             shouldRender('profit') && (
-              <el-table-column width="50" prop="profit" label="盈亏" formatter={this.formatterFixedTwo} sortable={!this.setModeChecked}  />
+              <el-table-column key='盈亏' width="50" prop="profit" label="盈亏" formatter={this.formatterFixedTwo} sortable={!this.setModeChecked}  />
             )
           }
           {
-            shouldRender('cost') && (
-              <el-table-column width="50" label="成本" scopedSlots={this.$options.slots.costSlot} />
+            setModeCheckedShouldRender('cost') && (
+              <el-table-column key='成本' width="50" label="成本" scopedSlots={costSlot} />
             )
           }
           {
-            shouldRender('count') && (
-              <el-table-column width="50" label="持仓" scopedSlots={this.$options.slots.countSlot} />
-            )
-          }
-          {
-            shouldRender('upLimit') && (
-              <el-table-column width="50" label="上限" scopedSlots={this.$options.slots.upLimitSlot} />
-            )
-          }
-          {
-            shouldRender('downLimit') && (
-              <el-table-column width="50" label="下限" scopedSlots={this.$options.slots.downLimitSlot} />
-            )
-          }
-          {
-            shouldRender('chart') && (
-              <el-table-column width="50" label="走势图" scopedSlots={this.$options.slots.chartSlot} />
+            setModeCheckedShouldRender('count') && (
+              <el-table-column key='持仓' width="50" label="持仓" scopedSlots={countSlot} />
             )
           }
           {
             this.setModeChecked && (
-              <el-table-column width="45" label="操作" fixed="right" scopedSlots={this.$options.slots.operatingSlot} />
+              <el-table-column key='上限' width="50" label="上限" scopedSlots={upLimitSlot} />
+            )
+          }
+          {
+            this.setModeChecked && (
+              <el-table-column key='下限' width="50" label="下限" scopedSlots={downLimitSlot} />
+            )
+          }
+          {
+            shouldRender('chart') && (
+              <el-table-column key='走势图' width="50" label="走势图" scopedSlots={chartSlot} />
+            )
+          }
+          {
+            this.setModeChecked && (
+              <el-table-column key='操作' width="145" label="操作" fixed="right" scopedSlots={operatingSlot} />
             )
           }
         </el-table> 
@@ -240,7 +266,7 @@ const MainContent = {
 }
 
 const FormContent = {
-  props: ['formInline'],
+  props: ['formInline', 'localStocks'],
   data() {
     // 检查输入合法性
     const checkStock = (rule, value, callback) => {
@@ -255,14 +281,14 @@ const FormContent = {
 
 		// 检查是否重复输入
     const checkRepeat = (rule, value, callback) => {
-      if (this.localStock.indexOfAtt(value.slice(-8), 'code') > -1) {
+      if (Object.keys(this.localStocks).includes(value.slice(-8))) {
         callback(new Error('股票已存在，请勿重复添加！'))
       } else {
         callback()
       }
     }
     return {
-      rules: {
+      formRules: {
         code: [
 					{ required: true, message: '请输入股票名称或代码', trigger: 'blur' },
 					{ validator: checkStock, trigger: 'blur' },
@@ -283,8 +309,8 @@ const FormContent = {
     handleAddStock() {
       this.$refs.formInline.validate(valid => {
         if (valid) {
-          this.$emit('addStock')
-        } 
+          return this.$emit('addStock')
+        }
       })
     },
     querySearch(queryString, cb) {
@@ -293,8 +319,6 @@ const FormContent = {
       }
       getStockBySuggest(queryString).then(res => {
         let suggestList = getSuggestList(res)
-        debugger
-
         let result = queryString
           ? suggestList.filter(createFilter(queryString))
           : suggestList
@@ -303,6 +327,7 @@ const FormContent = {
     }
   },
   render(h) {
+    const {cost, code, count} = this.formInline
     return (
       <el-form
         ref="formInline"
@@ -313,7 +338,7 @@ const FormContent = {
         rules={this.formRules}>
         <el-form-item label="股票代码" prop="code">
           <el-autocomplete
-            value={this.formInline.code} 
+            value={code} 
             onInput={this.handleFormInlineChange('code')}
             fetch-suggestions={this.querySearch} 
             trigger-on-focus={false} 
@@ -324,7 +349,7 @@ const FormContent = {
         <el-form-item label="成本价">
           <el-input
             onInput={this.handleFormInlineChange('cost')}
-            value={this.formInline.cost}
+            value={cost}
             placeholder="请输入持仓成本"
             clearable />
         </el-form-item>
@@ -332,7 +357,7 @@ const FormContent = {
         <el-form-item label="持股量">
           <el-input
             onInput={this.handleFormInlineChange('count')}
-            value={this.formInline.count}
+            value={count}
             placeholder="请输入持股量"
             clearable />
         </el-form-item>
@@ -400,7 +425,11 @@ const BottomContent = {
         </div>
         <div
           class="announcement-wrapper"
-          style={{ width: this.announcementWidth + 'px' }}
+          style={{
+            width: this.announcementWidth + 'px',
+            overflow: 'hidden',
+            marginTop: '10px'
+          }}
           onClick={this.openWallStreetUrl}>
           <scroll-msg-line data={this.announcements} />
         </div>
@@ -417,6 +446,10 @@ const initFormInlineData = () => ({
   cost: '',
   count: ''
 })
+
+const getLocalStorageObject = name => JSON.parse(localStorage.getItem(name))
+const setLocalStorageObject = (name, object) => localStorage.setItem(name, JSON.stringify(object))
+
 export default {
   components: {
     LoadingContent,
@@ -427,20 +460,35 @@ export default {
   },
   data() {
     return {
+      editInput: {
+        count: 0,
+        cost: 0,
+        upLimit: 0,
+        downLimit: 0
+      },
+      stocksLoaded: false,
       progress: 0,
       announcements: [],
       colList: [], // 设置显示项
       setModeChecked: false, // 打开设置状态
-      stocks: [], // 股票列表
-      stockNameList: [], // 股票名称列表
+      stocksDetail: {}, // 股票列表
+      localSortedStockCodeList: getLocalStorageObject('localSortedStockCodeList') || [], // 股票名称列表
       suggests: [],
-      localStock: [],
+      localStocks: [],
       stockList: [],
       formInline: initFormInlineData()
     }
   },
   loadingMsg: '数据加载中...',
   computed: {
+    announcementWidth() {
+      return this.stockWidth - ANNOUNCEMENTPADDING
+    },
+    sortStocks() {
+      return Object.values(this.stocksDetail).sort((a, b) =>
+          this.localSortedStockCodeList.indexOf(a.code) - this.localSortedStockCodeList.indexOf(b.code)
+      )
+    },
     stockWidth() {
       const baseWidth = ['init', 'curPrice', 'range', 'rangePrice'].map(d => getColWidth(d)).reduce((acc, cur) => acc + cur, 0)
       const otherWidth = ['set', 'upLimit', 'downLimit', 'cost', 'count'].map(d => getColWidth(d)).reduce((acc, cur) => acc + cur, 0)
@@ -455,12 +503,15 @@ export default {
     stockWidth(val) {
       this.$refs.stock.style.width = val.toString() + 'px'
     },
-    colList() {
-      localStorage.setItem('colList', JSON.stringify(this.colList))
+    localSortedStockCodeList(val) {
+      setLocalStorageObject('localSortedStockCodeList', val)
     },
-    localStock: {
-      handler() {
-        localStorage.setItem('localStock', JSON.stringify(this.localStock))
+    colList(val) {
+      setLocalStorageObject('colList', val)
+    },
+    localStocks: {
+      handler(val) {
+        setLocalStorageObject('localStocks', val)
       },
       deep: true
     },
@@ -469,51 +520,56 @@ export default {
         this.$refs.mainContent.clearSort()
       }
       
-      this.$nextTick(() => {
-        this.stocks.map((item, index) => {
-          let tempStock = item
-          tempStock.setModeChecked = this.setModeChecked
-          this.stocks.splice(index, 1, tempStock)
-        })
-      })
+      // this.$nextTick(() => {
+      //   const stocksDetailCopy = Utils.deepClone(this.stocksDetail)
+
+      //   Object.entries(this.stocksDetailCopy).forEach((code, stockItem) => {
+      //     stocksDetailCopy[code] = Object.assign({}, stockItem, {
+      //       setModeChecked: this.setModeChecked
+      //     })
+      //   })
+        
+      // })
     }
   },
-  mounted() {
-		// 获得股票数据, 每 10s 更新一次。打开设置的时候不更新
-    setInterval(() => {
-      if (!this.setModeChecked) {
-        this._getALLStock(this.localStock)
-      }
-    }, 10000)
-    
-		// 进度条
-    setInterval(() => {
-      this._progressIncrease()
-    }, 100)
-    
+  created() {
+    this._initGetStock()
+    this.setAnnouncement()
+
     // 获取走势图
-    this.$nextTick(() => {
-      this._getALLStockTrade(this.localStock)
-    })
-  },  
-  methods: {
-    _getALLStockTrade(allStock) {
-      allStock.forEach(code => {
+    this.$nextTick(async () => {
+      await Promise.all(Object.values(this.localStocks).map(stock => {
+        this._getStockByCode(stock)
+      }))
+      this.stocksLoaded = true
+      await Promise.all(Object.values(this.localStocks).map(({code}) => {
         this._getStockTrade(code)
-      })
-    },
+      }))
+  
+      // 获得股票数据, 每 10s 更新一次。打开设置的时候不更新
+      setInterval(() => {
+        if (!this.setModeChecked) {
+          Object.values(this.localStocks).forEach(stock => {
+            this._getStockByCode(stock)
+          })
+        }
+      }, 10000)
+      
+      // 进度条
+      setInterval(() => {
+        this._progressIncrease()
+      }, 100)
+    })
+  },
+  methods: {
     _getStockTrade(code) {
       if (!code) return false
 
       getStockTrade(code).then(res => {
-        this.data = getStockTradeDetail(res)
-        let idxOfStocks = this.stocks.indexOfAtt(code, 'code')
-        if (idxOfStocks >= 0) {
-          this.stocks[idxOfStocks]['lineData'] = this.data.toString()
-          this.stocks.splice(idxOfStocks, 1, this.stocks[idxOfStocks])
-        } else {
-          this.stocks.push({ code, lineData: this.data.toString() })
-        }
+        const tradeData = getStockTradeDetail(res) || {}
+        const stockItem = Utils.deepClone(this.stocksDetail[code]) || {}
+        stockItem.lineData = tradeData.toString()
+        this.stocksDetail = Object.assign({}, this.stocksDetail, { [code]: stockItem })
       })
     },
     /**
@@ -530,63 +586,50 @@ export default {
           upLimit: 0
         }
       }
+
       const initColList = ['profit', 'chart']
+      // const initColList = ['profit', 'chart', 'cost']
 
-      this.colList =
-        localStorage.getItem('colList') && JSON.parse(localStorage.getItem('colList')).length > 0
-          ? JSON.parse(localStorage.getItem('colList'))
-          : initColList
+      const colList = getLocalStorageObject('colList') || []
+      this.colList = colList.length ? colList : initColList
       
-      this.localStock =
-        localStorage.getItem('localStock') && localStorage.getItem('localStock') !== '{}'
-          ? JSON.parse(localStorage.localStock)
-          : initShock
+      const localStocks = getLocalStorageObject('localStocks') || {}
+
+      this.localStocks = JSON.stringify(localStocks) !== '{}' ? localStocks : initShock
       
-      this._getALLStock(Object.values(this.localStock))
     },
-    /**
-     * 根据股票信息数组获取股票交易信息
-     * @param {*} allStock 
-     */
-    _getALLStock(stockList) {
-      stockList.forEach(stock => {
-        let { code, cost, count, upLimit, downLimit } = stock
-        this._getStockByCode(code, cost, count, upLimit, downLimit)
-      })
-    },
-    _getStockByCode(code, cost = 0, count = 0, upLimit = 0, downLimit = 0) {
-      if (!code) return false
+    _getStockByCode({ code, cost = 0, count = 0, upLimit = 0, downLimit = 0 } = {}) {
+      return new Promise(async (resolve, reject) => {
+        
+        if (!code) return reject(new Error('code is null'))
       
-      getStockByCode(code).then(res => {
-        let stockObj = getStockDetail({res, code, cost, count})
+        const res = await getStockByCode(code) // axios return null or Object
+        // 数据清洗
+        const stockDetail = getStockDetail({res, code, cost, count})
+  
+        if (!stockDetail) return reject(new Error('stockDetail is null'))
+  
 
-        if (stockObj) {
-          const item = this.stocks[code]
-
-          if (this.stockNameList.includes(code)) {
-            // 已存在，不更新lineData
-            stockObj['lineData'] = item['lineData']
-              ? item['lineData']
-              : ''
-            
-          } else {
-            stockObj['lineData'] = ''
-          }
-          this.stocks = Object.assign({}, this.stocks, {
-            [code]: stockObj
-          })
-
-          if (!Object.Keys(this.localStock).includes(code)) {
-            this.localStock = Object.assign({}, {
-              [code]: { code, cost, count, upLimit, downLimit }
-            })
-
-            this.formInline = initFormInlineData()
-          }
+        const item = Utils.deepClone(this.stocksDetail[code]) || {}
+  
+        stockDetail['lineData'] = item['lineData'] || ''
+        if (!this.localSortedStockCodeList.includes(code)) {
+          this.localSortedStockCodeList.push(code)
         }
+        stockDetail.upLimit = upLimit
+        stockDetail.downLimit = downLimit
+        this.stocksDetail = Object.assign({}, this.stocksDetail, {
+          [code]: stockDetail
+        })
+  
+        this.localStocks = Object.assign({}, this.localStocks, {
+          [code]: { code, cost, count, upLimit, downLimit }
+        })
+
+        resolve(code)
       })
     },
-    _getAnnouncement(limit = 20) {
+    setAnnouncement(limit = 20) {
       getAnnouncement(limit).then(res => {
         this.announcements = getAnnouncementDetail(res)
       })
@@ -594,51 +637,131 @@ export default {
     _progressIncrease() {
       this.progress = (this.progress + 1) % 101
     },
-    handleFormInlineChange({key, value}) {
+    handleFormInlineChange({ key, value }) {
       this.formInline = Object.assign({}, this.formInline, {
         [key]: value
       })
     },
-    handleFormInlineSelect({code}) {
-      this.handleFormInlineChange({key: 'code', value: code})
+    handleFormInlineSelect({ value }) {
+      this.handleFormInlineChange({key: 'code', value})
     },
-    handleAdddStock() {
+    async handleAdddStock() {
       let code = this.formInline.code.slice(-8)
       let { cost, count } = this.formInline
       cost = cost ? cost : 0
       count = count ? count : 0
       
-      this._getStockByCode(code, cost, count)
+      await this._getStockByCode({code, cost, count})
       this._getStockTrade(code)
+      this.formInline = initFormInlineData()
     },
     hadnleSetModeChecked(val) {
       this.setModeChecked = val
+    },
+    handleEditRow(code) {
+      const stockItem = Utils.deepClone(this.stocksDetail[code])
+      
+      if (!stockItem.edit) {
+        this.editInput = {
+          cost: stockItem.cost,
+          count: stockItem.count,
+          upLimit: stockItem.upLimit,
+          downLimit: stockItem.downLimit
+        }
+      } else {
+        stockItem.cost = this.editInput.cost
+        stockItem.count = this.editInput.count
+        stockItem.upLimit = this.editInput.upLimit
+        stockItem.downLimit = this.editInput.downLimit
+
+        const localStock = Utils.deepClone(this.localStocks[code])
+        localStock.cost = this.editInput.cost
+        localStock.count = this.editInput.count
+        localStock.upLimit = this.editInput.upLimit
+        localStock.downLimit = this.editInput.downLimit
+        
+        this.localStocks = Object.assign({}, this.localStocks, {
+          [code]: localStock
+        })
+        
+      }
+
+      stockItem.edit = !stockItem.edit
+      this.stocksDetail = Object.assign({}, this.stocksDetail, {
+        [code]: stockItem
+      })
+    },
+    handleEditChange({name, value}) {
+      this.editInput = Object.assign(this.editInput, {
+        [name]: value
+      })
+    },
+    handleDeleteRow(code) {
+      const stocksDetail = Utils.deepClone(this.stocksDetail)
+      const localStocks = Utils.deepClone(this.localStocks)
+      delete stocksDetail[code]
+      delete localStocks[code]
+
+      this.localSortedStockCodeList = this.localSortedStockCodeList.filter(d => d !== code)
+      this.stocksDetail = stocksDetail
+      this.localStocks = localStocks
+    },
+    handleCheckboxChange(val) {
+      this.colList = val
+    },
+    handleMoveDown(index) {
+      const i = +index
+      const list = [...this.localSortedStockCodeList.filter(d => Object.keys(this.localStocks).includes(d))];
+      [list[i+1], list[i]] = [list[i], list[i+1]]
+      
+      this.localSortedStockCodeList = list
+    },
+    handleMoveUp(index) {
+      const i = +index
+      debugger
+      const list = [...this.localSortedStockCodeList.filter(d => Object.keys(this.localStocks).includes(d))];
+      [list[i], list[i - 1]] = [list[i - 1], list[i]]
+      this.localSortedStockCodeList = list
     }
   },
   render (h) {
     return (
       <div class="stock" ref="stock">
-        <div class="main" class={{ 'setMode-main': this.setModeChecked }}>
+        <div class={{ 'setMode-main': this.setModeChecked, main: true }}>
           {
-            !this.stocks ? (
+            !this.stocksDetail && this.stocksLoaded ? (
               <loading-content>{this.$options.loadingMsg}</loading-content>
             ) : (
               <main-content
                 ref='mainContent'
+                setModeChecked={this.setModeChecked}
+                colList={this.colList}
+                localStocks={this.localStocks}
+                sortStocks={this.sortStocks}
+                editInput={this.editInput}
+                onEditRow={this.handleEditRow}
+                onEditChange={this.handleEditChange}
+                onDeleteRow={this.handleDeleteRow}
+                onMoveDown={this.handleMoveDown}
+                onMoveUp={this.handleMoveUp}
                 colList={this.colList} />
             )
           }
         </div>
-        <div class="footer" class={{ 'setMode-footer': this.setModeChecked }}>
+        <div class={{ 'setMode-footer': this.setModeChecked, footer: true }}>
           {
             this.setModeChecked && [
               <form-content
+                localStocks={this.localStocks}
                 formInline={this.formInline}
                 onSelect={this.handleFormInlineSelect}
                 onAddStock={this.handleAdddStock}
                 onFormInlineChange={this.handleFormInlineChange}
               />,
-              <check-box-group />
+              <check-box-group
+                colList={this.colList}
+                onCheckboxChange={this.handleCheckboxChange}
+              />
             ]
           }
           <bottom-content

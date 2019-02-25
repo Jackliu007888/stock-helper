@@ -1,4 +1,10 @@
 {
-  "presets": ["es2015"],
-  "plugins": ["transform-vue-jsx"]
+  "presets": [
+    "es2015"
+  ],
+  "plugins": [
+    "transform-vue-jsx", 
+    "transform-decorators-legacy",
+    "transform-class-properties"
+  ]
 }

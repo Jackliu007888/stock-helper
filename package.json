@@ -16,8 +16,11 @@
     "babel-loader": "^7.1.2",
     "babel-plugin-component": "^1.0.0",
     "babel-plugin-syntax-jsx": "^6.18.0",
-    "babel-plugin-transform-vue-jsx": "^3.7.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-decorators-legacy": "^1.3.5",
+    "babel-plugin-transform-vue-jsx": "^3.5.0",
     "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
     "css-loader": "^2.1.0",
     "del": "^2.2.0",
     "file-loader": "^1.1.6",
@@ -43,8 +46,8 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",
     "url-loader": "^0.6.2",
-    "vue-loader": "^13.6.2",
-    "vue-template-compiler": "^2.5.13",
+    "vue-loader": "^15.6.4",
+    "vue-template-compiler": "^2.6.7",
     "webpack": "^3.10.0",
     "webpack-stream": "^4.0.0",
     "wiredep": "^4.0.0"
@@ -52,7 +55,6 @@
   "dependencies": {
     "axios": "^0.18.0",
     "element-ui": "^2.5.4",
-    "vue": "^2.6.3",
-    "vue-seamless-scroll": "^1.1.16"
+    "vue": "^2.6.3"
   }
 }

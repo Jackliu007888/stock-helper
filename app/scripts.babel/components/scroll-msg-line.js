@@ -1,4 +1,3 @@
-import vueSeamlessScroll from 'vue-seamless-scroll'
 import { getColWidth } from '../popup/api/base'
 
 export default {
@@ -11,6 +10,11 @@ export default {
       type: String,
       default: '12',
       required: false
+    }
+  },
+  data() {
+    return {
+      translateX: -20
     }
   },
   computed: {
@@ -29,20 +33,29 @@ export default {
       return list;
     }
   },
-  components: {
-    vueSeamlessScroll
+  created() {
+    let i = 0
+    const addTranslateX = () => {
+      if (i++ >80 && i % 80 === 0) {
+        this.translateX+= 20
+      }
+      window.requestAnimationFrame(addTranslateX)    
+    }
+    window.requestAnimationFrame(addTranslateX)
   },
   render(h) {
     return (
-      <vue-seamless-scroll data={this.data} class-option={this.optionLeft} class="seamless-warp">
-        <ul class="item">
-          {
-            this.data.map(item => (
-              <li key={item.content}><img src="images/bulb.png" /><span>{item.content }</span></li>
-            ))
-          }
-        </ul>
-      </vue-seamless-scroll>
+      <ul class="item" style={{ transform: `translate3d(0, -${this.translateX}px, 0)`, transition: 'all 0.2s ease-in 0s', overflow: 'hidden'}}>
+        {
+          this.data.map(item => (
+            <li style={{
+              textAlign: 'left',
+              fontSize: '16px',
+              lineHeight: '20px'
+            }} key={item.content}><img style={{ width: '20px' }} src="images/bulb.png" /><span>{item.content}</span></li>
+          ))
+        }
+      </ul>
     )
   }
 }

@@ -1995,7 +1995,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 function getStockTradeDetail(res) {
   var tradeItemList = [];
   try {
-    tradeItemList = eval('(function() {\n      ' + res + '\n      return tradeItemList\n    })()');
+    tradeItemList = eval('(function() {\n      ' + res + '\n      return trade_item_list\n    })()');
   } catch (e) {
     console.error('getStockTradeDetail error', e.toString());
   }
@@ -2003,7 +2003,6 @@ function getStockTradeDetail(res) {
   tradeItemList = tradeItemList.filter(function (item, index) {
     return parseInt(item[2]) > 0;
   });
-
   // 筛选100量级数据
   var lenTimes = tradeItemList.length > 100 ? parseInt(tradeItemList.length / 100) : 1;
   tradeItemList = tradeItemList.filter(function (item, index) {
@@ -2197,10 +2196,9 @@ var process = {
   runCheckCode: function runCheckCode() {
     if (process.isBussiness()) {
       // 开市时间，每三分钟运行一次
-      var codeList = JSON.parse(localStorage.localStock);
-      codeList.forEach(function (element, index) {
-        var stockData = null;
-        stockData = new StockData(element);
+      var codeList = JSON.parse(localStorage.getItem('localStocks'));
+      codeList.forEach(function (code, index) {
+        var stockData = new StockData(code);
         stockData.getDetail().then(function (obj) {
           stockData.varifyData(obj, index);
         });
@@ -2240,31 +2238,32 @@ var StockData = function () {
           _baseObj$notifiedTime = _baseObj.notifiedTime,
           notifiedTime = _baseObj$notifiedTime === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _baseObj$notifiedTime;
 
+
       var d = new Date();
       var day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
       var month = d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
       var year = d.getFullYear();
       var curDate = year + '-' + month + '-' + day;
+
       // 当天的数据当天提醒
-      // localStorage.curDate = curDate
       if (date !== curDate) return;
       var isUp = upLimit && curPrice > upLimit;
       var isDown = downLimit && curPrice < downLimit;
-      var upMsgBox = null,
-          downMsgBox = null;
 
-      upMsgBox = new MsgBox('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + upLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
-      downMsgBox = new MsgBox('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
+      var upMsgBox = new MsgBox('股价上涨！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0A\u6DA8\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0A\u9650\u4E3A\uFFE5' + upLimit, 'images/stock_up.png', 'http://quote.eastmoney.com/' + code + '.html');
+      var downMsgBox = new MsgBox('股价下跌！请关注！', '\u60A8\u5173\u6CE8\u7684 ' + name + ' - ' + code + ' \u5DF2\u4E0B\u8DCC\u5230' + curPrice + ',\u8BBE\u7F6E\u4E0B\u9650\u4E3A\uFFE5' + downLimit, 'images/stock_down.png', 'http://quote.eastmoney.com/' + code + '.html');
+
       isUp && this.isOnTheTime(notifiedTime) && upMsgBox.show();
       isDown && this.isOnTheTime(notifiedTime) && downMsgBox.show();
       console.log(name, this.isOnTheTime(notifiedTime));
+
       if (isUp && this.isOnTheTime(notifiedTime) || isDown && this.isOnTheTime(notifiedTime)) {
         msgCount++;
         showBrowserAction(msgCount.toString());
-        var temp = JSON.parse(localStorage.localStock);
+        var temp = JSON.parse(localStorage.getItem('localStocks'));
         temp[index].hasNotified = true;
         temp[index].notifiedTime = new Date().getTime();
-        localStorage.localStock = JSON.stringify(temp);
+        localStorage.setItem('localStocks', JSON.stringify(temp));
       }
     }
   }, {
