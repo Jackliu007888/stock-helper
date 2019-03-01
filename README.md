@@ -1,12 +1,70 @@
-## a chrome extension for Chinese stocks / A 股股票助手--谷歌浏览器插件
+# a chrome extension for Chinese stocks / A 股股票助手--谷歌浏览器插件
+
+---
+
+时隔一年，翻出之前写的项目，有点不忍直视。于是想重构个 2.0版本。
+
+- 使用 Vue.js 2.6.3, 并且用 Vue 的 JSX 写法。抽象组件。
+
+- 用 es6 写法代替原有的 es5 写法
+
+- 优化内部数据解构
+
+---
+
+- localStocks 缓存于本地的股票数据
+
+```JavaScript
+{
+ sh000001: {
+    cost: 0, // 成本价
+    code: 'sh000001', // 股票代码
+    count: 0, // 持仓数量
+    downLimit: 0, // 股价提醒下限
+    upLimit: 0 // 股价提醒上限
+  }
+}
+```
+
+- localSortedStockCodeList 缓存于本地的股票代码列表，用于列表排序
+
+```JavaScript
+['sh000001', 'sz002183']
+```
+
+- stocksDetail 股票数据
+
+```JavaScript
+{
+ $code: {
+    code,        // 股票代码
+    name,        // 股票名称
+    rangePrice,  // 涨跌额
+    range,       // 涨跌幅
+    date,        // 日期
+    time,        // 时间
+    count,       // 持仓数量
+    profit,      // 盈亏
+    toPrice,     // 今开
+    yesPrice,    // 昨开
+    curPrice,    // 现价
+    highPrice,   // 最高价
+    lowPrice,    // 最低价
+    cost,        // 持仓成本
+    lineData     // 走势图数据
+  }
+}
+```
+
+---
 
 ![stock-01](http://oqzceoiaz.dddog.com.cn/stock-helper.png)
 ![stock-02](http://oqzceoiaz.dddog.com.cn/stock-show.png)
 ![stock-03](http://oqzceoiaz.dddog.com.cn/stock-up.png)
 
-### 描述：
+## 描述
 
-上次有个老哥在 v2ex 发了[为了早日解套 整了个上班机智盯盘的浏览器扩展](https://www.v2ex.com/t/452656#reply79) 的帖子。我发了个评论就有 10 多个 star，有点惊喜。作为介绍，再更新下 README 吧。目前已申请谷歌网上应用商店，已审核通过，谷歌浏览器 翻墙后打开 https://chrome.google.com/webstore/detail/stock-helper/akcminhddckjghbaolhcoccbjlmcnclo?hl=zh-CN ，即可访问。
+目前已申请谷歌网上应用商店，已审核通过，谷歌浏览器 翻墙后打开 [https://chrome.google.com/webstore/detail/stock-helper/akcminhddckjghbaolhcoccbjlmcnclo?hl=zh-CN](https://chrome.google.com/webstore/detail/stock-helper/akcminhddckjghbaolhcoccbjlmcnclo?hl=zh-CN) ，即可访问。
 
 以下初衷：
 

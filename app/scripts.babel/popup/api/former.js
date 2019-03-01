@@ -54,6 +54,7 @@ export const getAnnouncementDetail = res =>  {
 export const getStockDetail = ({
   res,
   code,
+  notifiedTime,
   cost = 0,
   count = 0
 }) => {
@@ -92,6 +93,7 @@ export const getStockDetail = ({
     time,
     count,
     profit,
+    notifiedTime,
     toPrice: getFixedNum(toPrice),
     yesPrice: getFixedNum(yesPrice),
     curPrice: getFixedNum(curPrice),

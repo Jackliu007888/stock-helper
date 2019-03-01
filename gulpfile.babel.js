@@ -15,7 +15,7 @@ gulp.task('extras', () => {
     'app/_locales/**',
     '!app/scripts.babel',
     '!app/*.json',
-    '!app/*.html',
+    '!app/*.html'
   ], {
     base: 'app',
     dot: true
@@ -81,7 +81,7 @@ gulp.task('chromeManifest', () => {
           'scripts/chromereload.js'
         ]
       }
-  }))
+    }))
   .pipe($.if('*.css', $.cleanCss({compatibility: '*'})))
   .pipe($.if('*.js', $.sourcemaps.init()))
   .pipe($.if('*.js', $.uglify()))

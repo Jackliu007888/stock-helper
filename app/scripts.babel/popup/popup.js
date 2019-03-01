@@ -718,7 +718,6 @@ export default {
     },
     handleMoveUp(index) {
       const i = +index
-      debugger
       const list = [...this.localSortedStockCodeList.filter(d => Object.keys(this.localStocks).includes(d))];
       [list[i], list[i - 1]] = [list[i - 1], list[i]]
       this.localSortedStockCodeList = list

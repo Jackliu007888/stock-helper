@@ -482,7 +482,6 @@ export default {
 			})
 		},
 		_setStockWidth() {
-			// debugger
 			let baseWidth =
 				getColWidth('init') +
 				getColWidth('curPrice') +
