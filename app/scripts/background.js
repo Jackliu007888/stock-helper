@@ -2043,6 +2043,7 @@ var getAnnouncementDetail = exports.getAnnouncementDetail = function getAnnounce
 var getStockDetail = exports.getStockDetail = function getStockDetail(_ref) {
   var res = _ref.res,
       code = _ref.code,
+      notifiedTime = _ref.notifiedTime,
       _ref$cost = _ref.cost,
       cost = _ref$cost === undefined ? 0 : _ref$cost,
       _ref$count = _ref.count,
@@ -2084,6 +2085,7 @@ var getStockDetail = exports.getStockDetail = function getStockDetail(_ref) {
     time: time,
     count: count,
     profit: profit,
+    notifiedTime: notifiedTime,
     toPrice: (0, _base.getFixedNum)(toPrice),
     yesPrice: (0, _base.getFixedNum)(yesPrice),
     curPrice: (0, _base.getFixedNum)(curPrice),
@@ -2196,11 +2198,11 @@ var process = {
   runCheckCode: function runCheckCode() {
     if (process.isBussiness()) {
       // 开市时间，每三分钟运行一次
-      var codeList = JSON.parse(localStorage.getItem('localStocks'));
-      codeList.forEach(function (code, index) {
+      var localStocks = JSON.parse(localStorage.getItem('localStocks'));
+      Object.values(localStocks).forEach(function (code, index) {
         var stockData = new StockData(code);
         stockData.getDetail().then(function (obj) {
-          stockData.varifyData(obj, index);
+          stockData.varifyData(obj);
         });
       });
     }
@@ -2225,16 +2227,16 @@ var StockData = function () {
 
   _createClass(StockData, [{
     key: 'varifyData',
-    value: function varifyData(stockObj, index) {
-      var curPrice = stockObj.curPrice,
-          name = stockObj.name,
-          date = stockObj.date;
+    value: function varifyData() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          curPrice = _ref.curPrice,
+          name = _ref.name,
+          date = _ref.date;
+
       var _baseObj = this.baseObj,
           code = _baseObj.code,
           upLimit = _baseObj.upLimit,
           downLimit = _baseObj.downLimit,
-          _baseObj$hasNotified = _baseObj.hasNotified,
-          hasNotified = _baseObj$hasNotified === undefined ? false : _baseObj$hasNotified,
           _baseObj$notifiedTime = _baseObj.notifiedTime,
           notifiedTime = _baseObj$notifiedTime === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _baseObj$notifiedTime;
 
@@ -2246,7 +2248,7 @@ var StockData = function () {
       var curDate = year + '-' + month + '-' + day;
 
       // 当天的数据当天提醒
-      if (date !== curDate) return;
+      if (date !== curDate) return null;
       var isUp = upLimit && curPrice > upLimit;
       var isDown = downLimit && curPrice < downLimit;
 
@@ -2255,15 +2257,13 @@ var StockData = function () {
 
       isUp && this.isOnTheTime(notifiedTime) && upMsgBox.show();
       isDown && this.isOnTheTime(notifiedTime) && downMsgBox.show();
-      console.log(name, this.isOnTheTime(notifiedTime));
 
       if (isUp && this.isOnTheTime(notifiedTime) || isDown && this.isOnTheTime(notifiedTime)) {
         msgCount++;
         showBrowserAction(msgCount.toString());
-        var temp = JSON.parse(localStorage.getItem('localStocks'));
-        temp[index].hasNotified = true;
-        temp[index].notifiedTime = new Date().getTime();
-        localStorage.setItem('localStocks', JSON.stringify(temp));
+        var localStocks = JSON.parse(localStorage.getItem('localStocks'));
+        localStocks[code].notifiedTime = new Date().getTime();
+        localStorage.setItem('localStocks', JSON.stringify(localStocks));
       }
     }
   }, {
@@ -2283,15 +2283,11 @@ var StockData = function () {
             count = _baseObj2.count,
             upLimit = _baseObj2.upLimit,
             downLimit = _baseObj2.downLimit,
-            _baseObj2$hasNotified = _baseObj2.hasNotified,
-            hasNotified = _baseObj2$hasNotified === undefined ? false : _baseObj2$hasNotified,
             _baseObj2$notifiedTim = _baseObj2.notifiedTime,
             notifiedTime = _baseObj2$notifiedTim === undefined ? new Date().getTime() - 13 * 60 * 60 * 1000 : _baseObj2$notifiedTim;
 
         (0, _api.getStockByCode)(code).then(function (res) {
-          var stockObj = (0, _former.getStockDetail)({ res: res, code: code, cost: cost, count: count, upLimit: upLimit, downLimit: downLimit });
-          console.log(stockObj);
-          resolve(stockObj);
+          resolve((0, _former.getStockDetail)({ res: res, code: code, cost: cost, count: count, upLimit: upLimit, downLimit: downLimit, notifiedTime: notifiedTime }));
         });
       });
     }

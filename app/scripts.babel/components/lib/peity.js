@@ -34,7 +34,6 @@ class Peity {
       this.$svg = svgElement('svg', {
         'class': 'peity'
       })
-      // debugger
       this.$el.parentNode.insertBefore(this.$svg, this.$el)
     }
     this.$svg.innerHTML = ''

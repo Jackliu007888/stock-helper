@@ -9,8 +9,7 @@ package
 .vscode
 */.DS_Store
 .vscode
-app/images/效果.png
-app/images/stock_96px.png
 app.pem
 app.crx
+app/scripts
 
